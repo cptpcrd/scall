@@ -50,7 +50,9 @@ def load_headers(names: Iterable[Tuple[str, str]], arch: str, extra: str = ''):
             f.flush()
             lines = subprocess.check_output(['gcc', '-nostdinc',
                 '-I', '{}/arch/{}/include/uapi'.format(linux_path, arch),
+                '-I', '{}/arch/{}/include/generated/uapi'.format(linux_path, arch),
                 '-I', '{}/include'.format(linux_path),
+                '-I', '{}/include/uapi'.format(linux_path),
                 '-I', temp_include_dir,
                 '-P', # don't include line number markers, which make the output annoying to parse
                 '-E', # only preprocess, don't compile

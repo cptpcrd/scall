@@ -2,7 +2,7 @@ name: Extract syscalls
 
 on:
   push:
-    branches: [master]
+    branches: [master, test-ci]
 
 defaults:
   run:
@@ -33,11 +33,11 @@ jobs:
             make ARCH="${arch}" archheaders
           done
 
-      - name: Build syscall numbers
+      - name: Build new syscall number files
         run: |
           set -e
           cd tools
-          python3 nr_from_src ${{ runner.temp }}/linux
+          python3 nr_from_src.py ${{ runner.temp }}/linux
 
       - name: Check for changes
         run: |
@@ -50,5 +50,7 @@ jobs:
         run: |
           set -e
           git add .
+          git config user.name ${{ github.repository_owner }}
+          git config user.email ${{ github.repository_owner }}@users.noreply.github.com
           git commit -m "nr: update based on kernel sources"
-          git push --force https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git HEAD:auto-syscalls
+          git push --force https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git HEAD:syscalls-auto
