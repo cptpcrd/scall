@@ -52,12 +52,7 @@ pub unsafe fn syscall3(mut n: usize, a1: usize, a2: usize, a3: usize) -> usize {
 }
 
 #[inline(always)]
-pub unsafe fn syscall4(mut n: usize,
-                       a1: usize,
-                       a2: usize,
-                       a3: usize,
-                       a4: usize)
-                       -> usize {
+pub unsafe fn syscall4(mut n: usize, a1: usize, a2: usize, a3: usize, a4: usize) -> usize {
     llvm_asm!("syscall"
          : "+{rax}"(n)
          : "{rdi}"(a1) "{rsi}"(a2) "{rdx}"(a3) "{r10}"(a4)
@@ -67,13 +62,14 @@ pub unsafe fn syscall4(mut n: usize,
 }
 
 #[inline(always)]
-pub unsafe fn syscall5(mut n: usize,
-                       a1: usize,
-                       a2: usize,
-                       a3: usize,
-                       a4: usize,
-                       a5: usize)
-                       -> usize {
+pub unsafe fn syscall5(
+    mut n: usize,
+    a1: usize,
+    a2: usize,
+    a3: usize,
+    a4: usize,
+    a5: usize,
+) -> usize {
     llvm_asm!("syscall"
          : "+{rax}"(n)
          : "{rdi}"(a1) "{rsi}"(a2) "{rdx}"(a3) "{r10}"(a4) "{r8}"(a5)
@@ -83,14 +79,15 @@ pub unsafe fn syscall5(mut n: usize,
 }
 
 #[inline(always)]
-pub unsafe fn syscall6(mut n: usize,
-                       a1: usize,
-                       a2: usize,
-                       a3: usize,
-                       a4: usize,
-                       a5: usize,
-                       a6: usize)
-                       -> usize {
+pub unsafe fn syscall6(
+    mut n: usize,
+    a1: usize,
+    a2: usize,
+    a3: usize,
+    a4: usize,
+    a5: usize,
+    a6: usize,
+) -> usize {
     llvm_asm!("syscall"
          : "+{rax}"(n)
          : "{rdi}"(a1) "{rsi}"(a2) "{rdx}"(a3) "{r10}"(a4) "{r8}"(a5)"{r9}"(a6)

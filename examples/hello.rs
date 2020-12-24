@@ -7,12 +7,11 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-#[macro_use]
-extern crate sc;
+use scall::syscall;
 
 fn write(fd: usize, buf: &[u8]) {
     unsafe {
-        syscall!(WRITE, fd, buf.as_ptr(), buf.len());
+        syscall!(WRITE, fd, buf.as_ptr(), buf.len()).unwrap();
     }
 }
 

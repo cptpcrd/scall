@@ -57,11 +57,7 @@ pub unsafe fn syscall2(mut n: usize, mut a1: usize, mut a2: usize) -> usize {
 }
 
 #[inline(always)]
-pub unsafe fn syscall3(mut n: usize,
-                       mut a1: usize,
-                       mut a2: usize,
-                       mut a3: usize)
-                       -> usize {
+pub unsafe fn syscall3(mut n: usize, mut a1: usize, mut a2: usize, mut a3: usize) -> usize {
     llvm_asm!("sc
           bns+ 1f
           neg $1, $1
@@ -74,12 +70,13 @@ pub unsafe fn syscall3(mut n: usize,
 }
 
 #[inline(always)]
-pub unsafe fn syscall4(mut n: usize,
-                       mut a1: usize,
-                       mut a2: usize,
-                       mut a3: usize,
-                       mut a4: usize)
-                       -> usize {
+pub unsafe fn syscall4(
+    mut n: usize,
+    mut a1: usize,
+    mut a2: usize,
+    mut a3: usize,
+    mut a4: usize,
+) -> usize {
     llvm_asm!("sc
           bns+ 1f
           neg $1, $1
@@ -92,13 +89,14 @@ pub unsafe fn syscall4(mut n: usize,
 }
 
 #[inline(always)]
-pub unsafe fn syscall5(mut n: usize,
-                       mut a1: usize,
-                       mut a2: usize,
-                       mut a3: usize,
-                       mut a4: usize,
-                       mut a5: usize)
-                       -> usize {
+pub unsafe fn syscall5(
+    mut n: usize,
+    mut a1: usize,
+    mut a2: usize,
+    mut a3: usize,
+    mut a4: usize,
+    mut a5: usize,
+) -> usize {
     llvm_asm!("sc
           bns+ 1f
           neg $1, $1
@@ -112,14 +110,15 @@ pub unsafe fn syscall5(mut n: usize,
 }
 
 #[inline(always)]
-pub unsafe fn syscall6(mut n: usize,
-                       mut a1: usize,
-                       mut a2: usize,
-                       mut a3: usize,
-                       mut a4: usize,
-                       mut a5: usize,
-                       mut a6: usize)
-                       -> usize {
+pub unsafe fn syscall6(
+    mut n: usize,
+    mut a1: usize,
+    mut a2: usize,
+    mut a3: usize,
+    mut a4: usize,
+    mut a5: usize,
+    mut a6: usize,
+) -> usize {
     llvm_asm!("sc
           bns+ 1f
           neg $1, $1

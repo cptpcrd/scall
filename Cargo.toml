@@ -1,10 +1,12 @@
 [package]
-authors = [ "The syscall.rs Project Developers" ]
+name = "scall"
+version = "0.1.0"
+edition = "2018"
+
 description = "Raw system calls"
-documentation = "https://docs.rs/sc"
-keywords = ["syscall", "system", "call"]
-license = "MIT/Apache-2.0"
-name = "sc"
 readme = "README.md"
-repository = "https://github.com/japaric/syscall.rs"
-version = "0.2.3"
+authors = ["The syscall.rs Project Developers", "cptpcrd"]
+keywords = ["syscall", "system", "call"]
+
+license = "MIT/Apache-2.0"
+repository = "https://github.com/cptpcrd/scall"

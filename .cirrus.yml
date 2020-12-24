@@ -1,0 +1,45 @@
+task:
+  name: FreeBSD $FREEBSD_VERSION ($TOOLCHAIN)
+
+  freebsd_instance:
+    cpu: 1
+    image_family: $FREEBSD_IMAGE
+
+  matrix:
+    - env:
+        FREEBSD_VERSION: 12.1
+        FREEBSD_IMAGE: freebsd-12-1
+    - env:
+        FREEBSD_VERSION: 12.1 STABLE
+        FREEBSD_IMAGE: freebsd-12-1-snap
+    # - env:
+    #     FREEBSD_VERSION: 13.0
+    #     FREEBSD_IMAGE: freebsd-13-0-snap
+
+  matrix:
+    - env:
+        TOOLCHAIN: nightly
+
+  env:
+    CODECOV_TOKEN: ENCRYPTED[044ba2988745ce07c74c2ff4c96c80fcee00f0919de457f25b3d8c8c1d986bae996b47cf0392b256287be5c6e0dd6e4b]
+
+  install_script:
+    - pkg install -y curl kcov bash
+    - curl -sSf https://sh.rustup.rs -o rustup.sh
+    - sh rustup.sh -y --profile default --default-toolchain $TOOLCHAIN
+  build_script:
+    - . $HOME/.cargo/env
+    - cargo build
+  test_script:
+    - . $HOME/.cargo/env
+    - cargo test
+    - |
+      mkdir -p coverage-build
+      for f in target/debug/deps/*; do
+        if [ -x "$f" ]; then
+          kcov --exclude-pattern=/.cargo,/.rustup,/usr/lib --verify coverage-build/ "$f"
+        fi
+      done
+  coverage_collect_upload_script:
+    - kcov --merge coverage-merged/ coverage-build/
+    - OS="$FREEBSD_IMAGE" bash <(curl -s https://codecov.io/bash) -e OS,TOOLCHAIN -n "$FREEBSD_IMAGE-$TOOLCHAIN" -Z -f coverage-merged/kcov-merged/cobertura.xml

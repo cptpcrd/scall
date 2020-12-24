@@ -1,0 +1,217 @@
+name: CI
+on: [push, pull_request]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: Build
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        toolchain: [nightly]
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-unknown-linux-musl
+          - i686-unknown-linux-gnu
+          - i686-unknown-linux-musl
+        os: [ubuntu-latest]
+
+        include:
+          - toolchain: nightly
+            target: x86_64-apple-darwin
+            os: macos-latest
+
+    # Allow nightly builds to fail
+    continue-on-error: ${{ matrix.toolchain == 'nightly' }}
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Set up repo
+        uses: actions/checkout@v2
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          target: ${{ matrix.target }}
+      - name: Install 32-bit glibc build dependencies
+        run: sudo apt-get update && sudo apt-get -y install gcc-multilib
+        if: matrix.os == 'ubuntu-latest' && matrix.target == 'i686-unknown-linux-gnu'
+
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          command: build
+          args: --verbose --target ${{ matrix.target }}
+
+      - name: Run tests
+        uses: actions-rs/cargo@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          command: test
+          args: --verbose --target ${{ matrix.target }}
+        # Only try to run the tests if the OS/architecture we're building for
+        # matches the host machine.
+        if: >-
+          matrix.os == 'ubuntu-latest' && (startsWith(matrix.target, 'x86_64-unknown-linux-')
+              || startsWith(matrix.target, 'i686-unknown-linux-'))
+          || matrix.os == 'macos-latest' && startsWith(matrix.target, 'x86_64-apple-darwin')
+
+  cross-build:
+    name: Build
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        target:
+          - aarch64-unknown-linux-gnu
+          - armv7-unknown-linux-gnueabihf
+          - mips-unknown-linux-gnu
+          - mips64-unknown-linux-gnuabi64
+          - mips64el-unknown-linux-gnuabi64
+          - mipsel-unknown-linux-gnu
+          - powerpc-unknown-linux-gnu
+          - powerpc64-unknown-linux-gnu
+          - powerpc64le-unknown-linux-gnu
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up repo
+        uses: actions/checkout@v2
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          default: true
+          target: x86_64-unknown-linux-gnu
+          components: rust-src
+
+      - name: Install cross
+        uses: actions-rs/install@v0.1
+        with:
+          crate: cross
+          version: latest
+          use-tool-cache: true
+
+      - name: Build
+        run: cross build --verbose --target ${{ matrix.target }}
+
+      - name: Build (release mode)
+        run: cross build --verbose --target ${{ matrix.target }} --release
+
+      - name: Test
+        run: cross build --verbose --target ${{ matrix.target }}
+
+      - name: Test (release mode)
+        run: cross build --verbose --target ${{ matrix.target }} --release
+
+  coverage-tarpaulin:
+    name: Tarpaulin
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        toolchain: [nightly]
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-unknown-linux-musl
+        os: [ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          target: ${{ matrix.target }}
+
+      - name: Install tarpaulin
+        uses: actions-rs/install@v0.1
+        with:
+          crate: cargo-tarpaulin
+          version: latest
+          use-tool-cache: true
+
+      - name: Run tarpaulin
+        uses: actions-rs/cargo@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          command: tarpaulin
+          args: --verbose --out Xml --target ${{ matrix.target }}
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1.0.13
+        with:
+          name: ${{ matrix.toolchain }}-${{ matrix.target }}
+          fail_ci_if_error: true
+          env_vars: OS,TARGET,TOOLCHAIN,JOB
+        env:
+          JOB: ${{ github.job }}
+          OS: ${{ matrix.os }}
+          TARGET: ${{ matrix.target }}
+          TOOLCHAIN: ${{ matrix.toolchain }}
+
+  coverage-grcov:
+    name: Grcov
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        toolchain: [nightly]
+        target: [x86_64-apple-darwin]
+        os: [macos-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          target: ${{ matrix.target }}
+
+      - name: Run tests
+        uses: actions-rs/cargo@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          command: test
+          args: --verbose --target ${{ matrix.target }}
+        env:
+          CARGO_INCREMENTAL: '0'
+          RUSTFLAGS: -Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort
+          RUSTDOCFLAGS: -Cpanic=abort
+
+      - name: Install grcov
+        uses: actions-rs/install@v0.1
+        with:
+          crate: grcov
+          version: latest
+          use-tool-cache: true
+
+      - name: Run grcov
+        uses: actions-rs/grcov@v0.1
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1.0.13
+        with:
+          name: ${{ matrix.toolchain }}-${{ matrix.target }}
+          fail_ci_if_error: true
+          env_vars: OS,TARGET,TOOLCHAIN,JOB
+        env:
+          JOB: ${{ github.job }}
+          OS: ${{ matrix.os }}
+          TARGET: ${{ matrix.target }}
+          TOOLCHAIN: ${{ matrix.toolchain }}

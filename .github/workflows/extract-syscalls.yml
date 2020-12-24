@@ -1,0 +1,54 @@
+name: Extract syscalls
+
+on:
+  push:
+    branches: [master]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  extract-nrs:
+    name: Extract syscalls
+
+    strategy:
+      fail-fast: false
+
+    continue-on-error: false
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build kernel headers
+        run: |
+          set -e
+          cd ${{ runner.temp }}
+          git clone --depth=1 git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+          cd linux
+
+          make headers
+          for arch in arm64 arm mips powerpc sparc x86; do
+            make ARCH="${arch}" archheaders
+          done
+
+      - name: Build syscall numbers
+        run: |
+          set -e
+          cd tools
+          python3 nr_from_src ${{ runner.temp }}/linux
+
+      - name: Check for changes
+        run: |
+          if [ -n "$(git status --porcelain=v1)" ]; then
+            echo 'has_changes=true' >>$GITHUB_ENV
+          fi
+
+      - name: Push changes
+        if: ${{ env.has_changes == 'true' }}
+        run: |
+          set -e
+          git add .
+          git commit -m "nr: update based on kernel sources"
+          git push --force https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git HEAD:auto-syscalls

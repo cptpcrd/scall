@@ -7,33 +7,70 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-#[macro_use]
-extern crate sc;
+use scall::{syscall, syscall_raw};
 
-#[cfg(target_os = "linux")]
 #[test]
-fn ebadf() {
+fn test_ebadf() {
     static MESSAGE: &'static str = "Hello, world!";
 
     unsafe {
-        assert_eq!(syscall!(WRITE, 4, MESSAGE.as_ptr(), MESSAGE.len()) as isize,
-                   -9)
+        assert_eq!(
+            syscall!(WRITE, -4isize, MESSAGE.as_ptr(), MESSAGE.len()),
+            Err(9)
+        );
+
+        #[cfg(target_os = "linux")]
+        assert_eq!(
+            syscall_raw!(WRITE, -4isize, MESSAGE.as_ptr(), MESSAGE.len()),
+            -9isize as usize
+        );
+
+        #[cfg(any(target_os = "freebsd", target_os = "macos"))]
+        assert_eq!(
+            syscall_raw!(WRITE, -4isize, MESSAGE.as_ptr(), MESSAGE.len()),
+            (9, true)
+        );
     }
 }
 
-// getpid() is POSIX but that doesn't guarantee it's a system call.
-#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 #[test]
-fn getpid() {
+fn test_fsync() {
     unsafe {
-        assert!(0 < sc::syscall0(sc::nr::GETPID));
+        use std::os::unix::io::AsRawFd;
+        let file = std::fs::File::open(std::env::current_exe().unwrap()).unwrap();
+
+        assert_eq!(syscall!(FSYNC, file.as_raw_fd()), Ok(0));
     }
 }
 
-#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 #[test]
-fn getpid_macro() {
+fn test_kill() {
     unsafe {
-        assert!(0 < syscall!(GETPID));
+        assert_eq!(syscall!(KILL, 0, 0), Ok(0));
+        assert_eq!(syscall!(KILL, std::process::id(), 0), Ok(0));
+
+        #[cfg(target_os = "linux")]
+        assert_eq!(syscall_raw!(KILL, 0, 0), 0);
+        #[cfg(any(target_os = "freebsd", target_os = "macos"))]
+        assert_eq!(syscall_raw!(KILL, 0, 0), (0, false));
+    }
+}
+
+#[test]
+fn test_getpid() {
+    let pid = unsafe { scall::syscall!(GETPID) }.unwrap();
+
+    assert_eq!(pid, std::process::id() as usize);
+
+    #[cfg(target_os = "linux")]
+    {
+        assert_eq!(unsafe { scall::syscall0(scall::nr::GETPID) }, pid);
+        assert_eq!(unsafe { syscall_raw!(GETPID) }, pid);
+    }
+
+    #[cfg(any(target_os = "freebsd", target_os = "macos"))]
+    {
+        assert_eq!(unsafe { scall::syscall0(scall::nr::GETPID) }, (pid, false));
+        assert_eq!(unsafe { syscall_raw!(GETPID) }, (pid, false));
     }
 }
