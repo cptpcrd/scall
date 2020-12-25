@@ -7,7 +7,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use scall::{syscall, syscall_raw};
+use scall::{syscall, syscall_nofail, syscall_raw};
 
 #[test]
 fn test_ebadf() {
@@ -17,6 +17,12 @@ fn test_ebadf() {
         assert_eq!(
             syscall!(WRITE, -4isize, MESSAGE.as_ptr(), MESSAGE.len()),
             Err(9)
+        );
+
+        // Note: This is `assert_ne`, NOT `assert_eq`.
+        assert_ne!(
+            syscall_nofail!(WRITE, -4isize, MESSAGE.as_ptr(), MESSAGE.len()),
+            0
         );
 
         #[cfg(target_os = "linux")]
@@ -40,6 +46,7 @@ fn test_fsync() {
         let file = std::fs::File::open(std::env::current_exe().unwrap()).unwrap();
 
         assert_eq!(syscall!(FSYNC, file.as_raw_fd()), Ok(0));
+        assert_eq!(syscall_nofail!(FSYNC, file.as_raw_fd()), 0);
     }
 }
 
@@ -53,6 +60,8 @@ fn test_kill() {
         assert_eq!(syscall_raw!(KILL, 0, 0), 0);
         #[cfg(any(target_os = "freebsd", target_os = "macos"))]
         assert_eq!(syscall_raw!(KILL, 0, 0), (0, false));
+
+        assert_eq!(syscall_nofail!(KILL, 0, 0), 0);
     }
 }
 
@@ -61,6 +70,8 @@ fn test_getpid() {
     let pid = unsafe { syscall!(GETPID) }.unwrap();
 
     assert_eq!(pid, std::process::id() as usize);
+
+    assert_eq!(unsafe { syscall_nofail!(GETPID) }, pid);
 
     #[cfg(target_os = "linux")]
     {
@@ -93,6 +104,10 @@ fn test_faccessat() {
             Ok(0)
         );
 
+        assert_eq!(
+            syscall_nofail!(FACCESSAT, AT_FDCWD, b"/\0".as_ptr(), F_OK, 0),
+            0
+        );
         #[cfg(target_os = "linux")]
         {
             let res = syscall!(FACCESSAT2, AT_FDCWD, b"/\0".as_ptr(), F_OK, 0);
@@ -112,10 +127,14 @@ fn test_prctl() {
         let old_keepcaps = syscall!(PRCTL, PR_GET_KEEPCAPS, 0, 0, 0, 0).unwrap();
 
         syscall!(PRCTL, PR_SET_KEEPCAPS, 0, 0, 0, 0).unwrap();
+
         assert_eq!(syscall!(PRCTL, PR_GET_KEEPCAPS, 0, 0, 0, 0), Ok(0));
+        assert_eq!(syscall_nofail!(PRCTL, PR_GET_KEEPCAPS, 0, 0, 0, 0), 0);
 
         syscall!(PRCTL, PR_SET_KEEPCAPS, 1, 0, 0, 0).unwrap();
+
         assert_eq!(syscall!(PRCTL, PR_GET_KEEPCAPS, 0, 0, 0, 0), Ok(1));
+        assert_eq!(syscall_nofail!(PRCTL, PR_GET_KEEPCAPS, 0, 0, 0, 0), 1);
 
         syscall!(PRCTL, PR_GET_KEEPCAPS, old_keepcaps, 0, 0, 0).unwrap();
     }
