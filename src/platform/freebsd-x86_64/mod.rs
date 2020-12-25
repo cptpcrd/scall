@@ -122,7 +122,7 @@ pub unsafe fn syscall6(
 }
 
 #[inline(always)]
-pub unsafe fn syscall0_nofail(n: usize) -> (usize, bool) {
+pub unsafe fn syscall0_nofail(n: usize) -> usize {
     let ret: usize;
     llvm_asm!("syscall"
         : "={rax}"(ret)
@@ -133,7 +133,7 @@ pub unsafe fn syscall0_nofail(n: usize) -> (usize, bool) {
 }
 
 #[inline(always)]
-pub unsafe fn syscall1_nofail(n: usize, a1: usize) -> (usize, bool) {
+pub unsafe fn syscall1_nofail(n: usize, a1: usize) -> usize {
     let ret: usize;
     llvm_asm!("syscall" : "={rax}"(ret)
         : "{rax}"(n), "{rdi}"(a1)
@@ -143,7 +143,7 @@ pub unsafe fn syscall1_nofail(n: usize, a1: usize) -> (usize, bool) {
 }
 
 #[inline(always)]
-pub unsafe fn syscall2_nofail(n: usize, a1: usize, a2: usize) -> (usize, bool) {
+pub unsafe fn syscall2_nofail(n: usize, a1: usize, a2: usize) -> usize {
     let ret: usize;
     llvm_asm!("syscall" : "={rax}"(ret)
         : "{rax}"(n), "{rdi}"(a1), "{rsi}"(a2)
@@ -153,7 +153,7 @@ pub unsafe fn syscall2_nofail(n: usize, a1: usize, a2: usize) -> (usize, bool) {
 }
 
 #[inline(always)]
-pub unsafe fn syscall3_nofail(n: usize, a1: usize, a2: usize, a3: usize) -> (usize, bool) {
+pub unsafe fn syscall3_nofail(n: usize, a1: usize, a2: usize, a3: usize) -> usize {
     let ret: usize;
     llvm_asm!("syscall" : "={rax}"(ret)
         : "{rax}"(n), "{rdi}"(a1), "{rsi}"(a2), "{rdx}"(a3)
@@ -163,7 +163,7 @@ pub unsafe fn syscall3_nofail(n: usize, a1: usize, a2: usize, a3: usize) -> (usi
 }
 
 #[inline(always)]
-pub unsafe fn syscall4_nofail(n: usize, a1: usize, a2: usize, a3: usize, a4: usize) -> (usize, bool) {
+pub unsafe fn syscall4_nofail(n: usize, a1: usize, a2: usize, a3: usize, a4: usize) -> usize {
     let ret: usize;
     llvm_asm!("syscall" : "={rax}"(ret)
         : "{rax}"(n), "{rdi}"(a1), "{rsi}"(a2), "{rdx}"(a3),
@@ -181,7 +181,7 @@ pub unsafe fn syscall5_nofail(
     a3: usize,
     a4: usize,
     a5: usize,
-) -> (usize, bool) {
+) -> usize {
     let ret: usize;
     llvm_asm!("syscall" : "={rax}"(ret)
         : "{rax}"(n), "{rdi}"(a1), "{rsi}"(a2), "{rdx}"(a3),
@@ -200,7 +200,7 @@ pub unsafe fn syscall6_nofail(
     a4: usize,
     a5: usize,
     a6: usize,
-) -> (usize, bool) {
+) -> usize {
     let ret: usize;
     llvm_asm!("syscall" : "={rax}"(ret)
         : "{rax}"(n), "{rdi}"(a1), "{rsi}"(a2), "{rdx}"(a3),
