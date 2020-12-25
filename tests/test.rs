@@ -58,7 +58,7 @@ fn test_kill() {
 
 #[test]
 fn test_getpid() {
-    let pid = unsafe { scall::syscall!(GETPID) }.unwrap();
+    let pid = unsafe { syscall!(GETPID) }.unwrap();
 
     assert_eq!(pid, std::process::id() as usize);
 
@@ -72,5 +72,77 @@ fn test_getpid() {
     {
         assert_eq!(unsafe { scall::syscall0(scall::nr::GETPID) }, (pid, false));
         assert_eq!(unsafe { syscall_raw!(GETPID) }, (pid, false));
+    }
+}
+
+#[test]
+fn test_faccessat() {
+    #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+    const AT_FDCWD: i32 = -100;
+    #[cfg(target_os = "macos")]
+    const AT_FDCWD: i32 = -2;
+
+    const F_OK: i32 = 0;
+
+    #[cfg(target_os = "linux")]
+    const ENOSYS: i32 = 38;
+
+    unsafe {
+        assert_eq!(
+            syscall!(FACCESSAT, AT_FDCWD, b"/\0".as_ptr(), F_OK, 0),
+            Ok(0)
+        );
+
+        #[cfg(target_os = "linux")]
+        {
+            let res = syscall!(FACCESSAT2, AT_FDCWD, b"/\0".as_ptr(), F_OK, 0);
+
+            assert!(res == Ok(0) || res == Err(ENOSYS), "{:?}", res);
+        }
+    }
+}
+
+#[cfg(target_os = "linux")]
+#[test]
+fn test_prctl() {
+    const PR_GET_KEEPCAPS: usize = 7;
+    const PR_SET_KEEPCAPS: usize = 8;
+
+    unsafe {
+        let old_keepcaps = syscall!(PRCTL, PR_GET_KEEPCAPS, 0, 0, 0, 0).unwrap();
+
+        syscall!(PRCTL, PR_SET_KEEPCAPS, 0, 0, 0, 0).unwrap();
+        assert_eq!(syscall!(PRCTL, PR_GET_KEEPCAPS, 0, 0, 0, 0), Ok(0));
+
+        syscall!(PRCTL, PR_SET_KEEPCAPS, 1, 0, 0, 0).unwrap();
+        assert_eq!(syscall!(PRCTL, PR_GET_KEEPCAPS, 0, 0, 0, 0), Ok(1));
+
+        syscall!(PRCTL, PR_GET_KEEPCAPS, old_keepcaps, 0, 0, 0).unwrap();
+    }
+}
+
+#[cfg(target_os = "freebsd")]
+#[test]
+fn test_procctl() {
+    const P_PID: usize = 0;
+    const PROC_REAP_ACQUIRE: usize = 2;
+    const PROC_REAP_RELEASE: usize = 3;
+    const EBUSY: i32 = 16;
+    const EINVAL: i32 = 22;
+
+    unsafe {
+        let pid = syscall!(GETPID).unwrap();
+
+        assert_eq!(syscall!(PROCCTL, P_PID, pid, PROC_REAP_ACQUIRE, 0), Ok(0));
+        assert_eq!(
+            syscall!(PROCCTL, P_PID, pid, PROC_REAP_ACQUIRE, 0),
+            Err(EINVAL)
+        );
+
+        assert_eq!(syscall!(PROCCTL, P_PID, pid, PROC_REAP_RELEASE, 0), Ok(0));
+        assert_eq!(
+            syscall!(PROCCTL, P_PID, pid, PROC_REAP_RELEASE, 0),
+            Err(EBUSY)
+        );
     }
 }
