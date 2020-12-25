@@ -136,3 +136,11 @@ pub unsafe fn syscall6(
          : "volatile");
     ret
 }
+
+pub use syscall0 as syscall0_nofail;
+pub use syscall1 as syscall1_nofail;
+pub use syscall2 as syscall2_nofail;
+pub use syscall3 as syscall3_nofail;
+pub use syscall4 as syscall4_nofail;
+pub use syscall5 as syscall5_nofail;
+pub use syscall6 as syscall6_nofail;

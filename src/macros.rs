@@ -10,28 +10,21 @@
 
 /// Make a syscall, and return the direct result (platform-specific).
 ///
+/// **Note**: You should use [`syscall!`] or [`syscall_nofail!`] in most cases!
+///
 /// On Linux, this returns a `usize` representing the return value of the syscall (if an error
 /// occurred, the error code is encoded into the result). On macOS and FreeBSD, it returns a
 /// `(usize, bool)` tuple indicating 1) the return value and 2) whether an error occurred.
 /// ([`RawResult`] is an alias for this type, and it can be "decoded" with
 /// [`decode_raw_result()`].)
 ///
-/// Note: [`syscall!`] should be preferred for most purposes. However, this macro may be useful in
-/// 2 cases:
-///
-/// 1. The syscall will never fail (like `sync()`) or you don't care about the result (like
-///    possibly `close()`).
-///
-///    Since [`syscall!`] returns an `Result<usize, i32>` and `Result` is annotated with
-///    `#[must_use]`, using `syscall_raw!` will simplify things slightly -- i.e.
-///    `syscall_raw!(SYNC)` instead of `drop(syscall!(SYNC))` to avoid the compiler complaining.
-///
-/// 2. You need to make a series of syscalls quickly, *then* check the return values.
-///
-///    In this case, you can call `syscall_raw!`, store the [`RawResult`]s from each, and *then*
-///    decode and check them with [`decode_raw_result()`].
+/// Note: [`syscall!`] or [`syscall_nofail!`] should be preferred for most purposes. However, this
+/// macro may be useful if you need to make a series of syscalls quickly, *then* check the return
+/// values. In this case, you can call `syscall_raw!`, store the [`RawResult`]s from each, and
+/// *then* decode and check them with [`decode_raw_result()`].
 ///
 /// [`syscall!`]: ./macro.syscall.html
+/// [`syscall_nofail!`]: ./macro.syscall_nofail.html
 /// [`RawResult`]: ./type.RawResult.html
 /// [`decode_raw_result()`]: ./fn.decode_raw_result.html
 #[macro_export]
@@ -87,6 +80,101 @@ macro_rules! syscall_raw {
 
     ($nr:ident, $a1:expr, $a2:expr, $a3:expr, $a4:expr, $a5:expr, $a6:expr, $a7:expr) => {
         $crate::syscall7(
+            $crate::nr::$nr,
+            $a1 as usize,
+            $a2 as usize,
+            $a3 as usize,
+            $a4 as usize,
+            $a5 as usize,
+            $a6 as usize,
+            $a7 as usize,
+        )
+    };
+
+    ($nr:ident, $($args:expr,)*) => {
+        $crate::syscall_raw!($nr$(, $args)*)
+    };
+}
+
+/// Make a syscall that should never fail (or for which the result should be completely ignored).
+///
+/// Assuming that the syscall won't fail saves the overhead involved with checking for errors, so
+/// this macro may see minor performance boosts over [`syscall!`].
+///
+/// This macro will return the result of the syscall as a `usize`. It is assumed that either:
+/// 1. The syscall will never fail (like `sync()`, `sched_yield()`, or `getpid()`), or
+/// 2. The result will be ignored (like `close()` often is).
+///
+/// In case 1 the value that this macro evaluates to can be used. In case 2, however, it should be
+/// completely ignored (if you need the result, use [`syscall!`].
+///
+/// Example usage:
+/// ```
+/// # use scall::syscall_nofail;
+/// unsafe {
+///     // getpid() will never fail
+///     let pid = syscall_nofail!(GETPID);
+///
+///     // Completely ignore the result of close()
+///     // (In reality, a valid file descriptor would be used here)
+///     syscall_nofail!(CLOSE, -1i32);
+/// }
+/// ```
+///
+/// [`syscall!`]: ./macro.syscall.html
+#[macro_export]
+macro_rules! syscall_nofail {
+    ($nr:ident) => {
+        $crate::syscall0_nofail($crate::nr::$nr)
+    };
+
+    ($nr:ident, $a1:expr) => {
+        $crate::syscall1_nofail($crate::nr::$nr, $a1 as usize)
+    };
+
+    ($nr:ident, $a1:expr, $a2:expr) => {
+        $crate::syscall2_nofail($crate::nr::$nr, $a1 as usize, $a2 as usize)
+    };
+
+    ($nr:ident, $a1:expr, $a2:expr, $a3:expr) => {
+        $crate::syscall3_nofail($crate::nr::$nr, $a1 as usize, $a2 as usize, $a3 as usize)
+    };
+
+    ($nr:ident, $a1:expr, $a2:expr, $a3:expr, $a4:expr) => {
+        $crate::syscall4_nofail(
+            $crate::nr::$nr,
+            $a1 as usize,
+            $a2 as usize,
+            $a3 as usize,
+            $a4 as usize,
+        )
+    };
+
+    ($nr:ident, $a1:expr, $a2:expr, $a3:expr, $a4:expr, $a5:expr) => {
+        $crate::syscall5_nofail(
+            $crate::nr::$nr,
+            $a1 as usize,
+            $a2 as usize,
+            $a3 as usize,
+            $a4 as usize,
+            $a5 as usize,
+        )
+    };
+
+    ($nr:ident, $a1:expr, $a2:expr, $a3:expr, $a4:expr, $a5:expr, $a6:expr) => {
+        $crate::syscall6_nofail(
+            $crate::nr::$nr,
+            $a1 as usize,
+            $a2 as usize,
+            $a3 as usize,
+            $a4 as usize,
+            $a5 as usize,
+            $a6 as usize,
+        )
+    };
+
+    ($nr:ident, $a1:expr, $a2:expr, $a3:expr, $a4:expr, $a5:expr, $a6:expr, $a7:expr) => {
+        $crate::syscall7_nofail(
             $crate::nr::$nr,
             $a1 as usize,
             $a2 as usize,
