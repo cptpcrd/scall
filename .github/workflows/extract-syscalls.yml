@@ -55,14 +55,12 @@ jobs:
             echo 'has_changes=true' >>$GITHUB_ENV
           fi
 
-      - name: Commit changes
+      - name: Push changes
         if: ${{ env.has_changes == 'true' }}
         run: |
           set -e
           git add .
           git config user.name ${{ github.repository_owner }}
           git config user.email ${{ github.repository_owner }}@users.noreply.github.com
-          git commit -m "nr: update based on kernel sources" || true
-
-      - name: Push changes
-        run: git push --force https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git HEAD:syscalls-auto
+          git commit -m "nr: update based on kernel sources"
+          git push --force https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git HEAD:syscalls-auto
