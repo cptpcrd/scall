@@ -12,8 +12,7 @@
 //! Example usage:
 //!
 //! ```
-//! # use scall::syscall;
-//!
+//! # use scall::{syscall, syscall_nofail};
 //! unsafe {
 //!     let pid = syscall_nofail!(GETPID);
 //!     syscall!(KILL, pid, 0).unwrap();
