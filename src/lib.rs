@@ -15,7 +15,7 @@
 //! # use scall::syscall;
 //!
 //! unsafe {
-//!     let pid = syscall!(GETPID).unwrap();
+//!     let pid = syscall_nofail!(GETPID);
 //!     syscall!(KILL, pid, 0).unwrap();
 //! }
 //! ```

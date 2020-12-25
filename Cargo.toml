@@ -3,7 +3,7 @@ name = "scall"
 version = "0.1.0"
 edition = "2018"
 
-description = "Raw system calls"
+description = "Friendlier raw system calls"
 readme = "README.md"
 authors = ["The syscall.rs Project Developers", "cptpcrd"]
 keywords = ["syscall", "system", "call"]

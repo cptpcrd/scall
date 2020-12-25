@@ -6,9 +6,9 @@
 [![Cirrus CI](https://api.cirrus-ci.com/github/cptpcrd/scall.svg?branch=master)](https://cirrus-ci.com/github/cptpcrd/scall)
 [![codecov](https://codecov.io/gh/cptpcrd/scall/branch/master/graph/badge.svg)](https://codecov.io/gh/cptpcrd/scall)
 
-Friendlier syscalls for Rust.
+Friendlier raw system calls for Rust.
 
-This is a fork of [`sc`](https://crates.io/crates/sc). Advantages:
+This is a fork of [`sc`](https://crates.io/crates/sc) with a slightly reworked API. Advantages:
 
 1. It's easier to use -- the `syscall!` macro returns a `Result<usize, i32>` indicating either the syscall result (on success) or error number (on failure).
 
