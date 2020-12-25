@@ -108,10 +108,10 @@ jobs:
         run: cross build --verbose --target ${{ matrix.target }} --release
 
       - name: Test
-        run: cross build --verbose --target ${{ matrix.target }}
+        run: cross test --verbose --target ${{ matrix.target }}
 
       - name: Test (release mode)
-        run: cross build --verbose --target ${{ matrix.target }} --release
+        run: cross test --verbose --target ${{ matrix.target }} --release
 
   coverage-tarpaulin:
     name: Tarpaulin
