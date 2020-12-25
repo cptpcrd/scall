@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build kernel headers
+      - name: Build Linux kernel headers
         run: |
           set -e
           cd ${{ runner.temp }}
@@ -35,11 +35,19 @@ jobs:
             make ARCH="${arch}" archheaders
           done
 
+      - name: Download FreeBSD/macOS syscalls.master
+        run: |
+          set -e
+          wget https://github.com/freebsd/freebsd/raw/master/sys/kern/syscalls.master -O ${{ runner.temp }}/freebsd-syscalls.master
+          wget https://github.com/apple/darwin-xnu/raw/master/bsd/kern/syscalls.master -O ${{ runner.temp }}/macos-syscalls.master
+
       - name: Build new syscall number files
         run: |
           set -e
           cd tools
           python3 nr_from_src.py ${{ runner.temp }}/linux
+          python3 bsd_nr_from_src.py ${{ runner.temp }}/freebsd-syscalls.master freebsd
+          python3 bsd_nr_from_src.py ${{ runner.temp }}/macos-syscalls.master macos
 
       - name: Check for changes
         run: |

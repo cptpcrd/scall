@@ -75,7 +75,6 @@ fn test_getpid() {
     }
 }
 
-#[cfg(not(target_os = "macos"))]
 #[test]
 fn test_faccessat() {
     #[cfg(any(target_os = "freebsd", target_os = "linux"))]
