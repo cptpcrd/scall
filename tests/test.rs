@@ -75,6 +75,7 @@ fn test_getpid() {
     }
 }
 
+#[cfg(not(target_os = "macos"))]
 #[test]
 fn test_faccessat() {
     #[cfg(any(target_os = "freebsd", target_os = "linux"))]
@@ -133,16 +134,18 @@ fn test_procctl() {
     unsafe {
         let pid = syscall!(GETPID).unwrap();
 
+        syscall!(PROCCTL, P_PID, pid, PROC_REAP_RELEASE, 0);
+
         assert_eq!(syscall!(PROCCTL, P_PID, pid, PROC_REAP_ACQUIRE, 0), Ok(0));
         assert_eq!(
             syscall!(PROCCTL, P_PID, pid, PROC_REAP_ACQUIRE, 0),
-            Err(EINVAL)
+            Err(EBUSY)
         );
 
         assert_eq!(syscall!(PROCCTL, P_PID, pid, PROC_REAP_RELEASE, 0), Ok(0));
         assert_eq!(
             syscall!(PROCCTL, P_PID, pid, PROC_REAP_RELEASE, 0),
-            Err(EBUSY)
+            Err(EINVAL)
         );
     }
 }
