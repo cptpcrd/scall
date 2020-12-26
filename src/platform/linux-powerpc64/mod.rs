@@ -16,7 +16,7 @@
 
 pub mod nr;
 
-const CR0_ERROR_MASK: usize = 1 << (core::mem::size_of::<usize>() * 8 - 4);
+const CR0_ERROR_MASK: usize = 1 << 28;
 
 #[inline(always)]
 pub unsafe fn syscall0(mut n: usize) -> (usize, bool) {
