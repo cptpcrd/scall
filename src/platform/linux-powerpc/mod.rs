@@ -19,57 +19,51 @@
 
 pub mod nr;
 
+const CR0_ERROR_MASK: usize = 1 << (core::mem::size_of::<usize>() * 8 - 4);
+
 #[inline(always)]
-pub unsafe fn syscall0(mut n: usize) -> usize {
+pub unsafe fn syscall0(mut n: usize) -> (usize, bool) {
     let ret: usize;
-    llvm_asm!("sc
-          bns+ 1f
-          neg $1, $1
-          1:"
-         : "+{r0}"(n) "={r3}"(ret)
+    let mut is_err: usize;
+    llvm_asm!("sc"
+         : "+{r0}"(n) "={cr0}"(is_err) "={r3}"(ret)
          :
-         : "cr0" "memory" "r4" "r5" "r6" "r7" "r8" "r9" "r10" "r11" "r12"
+         : "memory" "r4" "r5" "r6" "r7" "r8" "r9" "r10" "r11" "r12"
          : "volatile");
-    ret
+    (ret, is_err & CR0_ERROR_MASK != 0)
 }
 
 #[inline(always)]
-pub unsafe fn syscall1(mut n: usize, mut a1: usize) -> usize {
-    llvm_asm!("sc
-          bns+ 1f
-          neg $1, $1
-          1:"
-         : "+{r0}"(n) "+{r3}"(a1)
+pub unsafe fn syscall1(mut n: usize, mut a1: usize) -> (usize, bool) {
+    let mut is_err: usize;
+    llvm_asm!("sc"
+         : "+{r0}"(n) "={cr0}"(is_err) "+{r3}"(a1)
          :
          : "cr0" "memory" "r4" "r5" "r6" "r7" "r8" "r9" "r10" "r11" "r12"
          : "volatile");
-    a1
+    (a1, is_err & CR0_ERROR_MASK != 0)
 }
 
 #[inline(always)]
-pub unsafe fn syscall2(mut n: usize, mut a1: usize, mut a2: usize) -> usize {
-    llvm_asm!("sc
-          bns+ 1f
-          neg $1, $1
-          1:"
-         : "+{r0}"(n) "+{r3}"(a1) "+{r4}"(a2)
+pub unsafe fn syscall2(mut n: usize, mut a1: usize, mut a2: usize) -> (usize, bool) {
+    let mut is_err: usize;
+    llvm_asm!("sc"
+         : "+{r0}"(n) "={cr0}"(is_err) "+{r3}"(a1) "+{r4}"(a2)
          :
          : "cr0" "memory" "r5" "r6" "r7" "r8" "r9" "r10" "r11" "r12"
          : "volatile");
-    a1
+    (a1, is_err & CR0_ERROR_MASK != 0)
 }
 
 #[inline(always)]
-pub unsafe fn syscall3(mut n: usize, mut a1: usize, mut a2: usize, mut a3: usize) -> usize {
-    llvm_asm!("sc
-          bns+ 1f
-          neg $1, $1
-          1:"
-         : "+{r0}"(n) "+{r3}"(a1) "+{r4}"(a2) "+{r5}"(a3)
+pub unsafe fn syscall3(mut n: usize, mut a1: usize, mut a2: usize, mut a3: usize) -> (usize, bool) {
+    let mut is_err: usize;
+    llvm_asm!("sc"
+         : "+{r0}"(n) "={cr0}"(is_err) "+{r3}"(a1) "+{r4}"(a2) "+{r5}"(a3)
          :
          : "cr0" "memory" "r6" "r7" "r8" "r9" "r10" "r11" "r12"
          : "volatile");
-    a1
+    (a1, is_err & CR0_ERROR_MASK != 0)
 }
 
 #[inline(always)]
@@ -79,16 +73,14 @@ pub unsafe fn syscall4(
     mut a2: usize,
     mut a3: usize,
     mut a4: usize,
-) -> usize {
-    llvm_asm!("sc
-          bns+ 1f
-          neg $1, $1
-          1:"
-         : "+{r0}"(n) "+{r3}"(a1) "+{r4}"(a2) "+{r5}"(a3) "+{r6}"(a4)
+) -> (usize, bool) {
+    let mut is_err: usize;
+    llvm_asm!("sc"
+         : "+{r0}"(n) "={cr0}"(is_err) "+{r3}"(a1) "+{r4}"(a2) "+{r5}"(a3) "+{r6}"(a4)
          :
          : "cr0" "memory" "r7" "r8" "r9" "r10" "r11" "r12"
          : "volatile");
-    a1
+    (a1, is_err & CR0_ERROR_MASK != 0)
 }
 
 #[inline(always)]
@@ -99,17 +91,15 @@ pub unsafe fn syscall5(
     mut a3: usize,
     mut a4: usize,
     mut a5: usize,
-) -> usize {
-    llvm_asm!("sc
-          bns+ 1f
-          neg $1, $1
-          1:"
-         : "+{r0}"(n) "+{r3}"(a1) "+{r4}"(a2) "+{r5}"(a3) "+{r6}"(a4)
+) -> (usize, bool) {
+    let mut is_err: usize;
+    llvm_asm!("sc"
+         : "+{r0}"(n) "={cr0}"(is_err) "+{r3}"(a1) "+{r4}"(a2) "+{r5}"(a3) "+{r6}"(a4)
            "+{r7}"(a5)
          :
          : "cr0" "memory" "r8" "r9" "r10" "r11" "r12"
          : "volatile");
-    a1
+    (a1, is_err & CR0_ERROR_MASK != 0)
 }
 
 #[inline(always)]
@@ -121,11 +111,103 @@ pub unsafe fn syscall6(
     mut a4: usize,
     mut a5: usize,
     mut a6: usize,
+) -> (usize, bool) {
+    let mut is_err: usize;
+    llvm_asm!("sc"
+         : "+{r0}"(n) "={cr0}"(is_err) "+{r3}"(a1) "+{r4}"(a2) "+{r5}"(a3) "+{r6}"(a4)
+           "+{r7}"(a5) "+{r8}"(a6)
+         :
+         : "cr0" "memory" "r9" "r10" "r11" "r12"
+         : "volatile");
+    (a1, is_err & CR0_ERROR_MASK != 0)
+}
+
+#[inline(always)]
+pub unsafe fn syscall0_nofail(mut n: usize) -> usize {
+    let ret: usize;
+    llvm_asm!("sc"
+         : "+{r0}"(n) "={r3}"(ret)
+         :
+         : "cr0" "memory" "r4" "r5" "r6" "r7" "r8" "r9" "r10" "r11" "r12"
+         : "volatile");
+    ret
+}
+
+#[inline(always)]
+pub unsafe fn syscall1_nofail(mut n: usize, mut a1: usize) -> usize {
+    llvm_asm!("sc"
+         : "+{r0}"(n) "+{r3}"(a1)
+         :
+         : "cr0" "memory" "r4" "r5" "r6" "r7" "r8" "r9" "r10" "r11" "r12"
+         : "volatile");
+    a1
+}
+
+#[inline(always)]
+pub unsafe fn syscall2_nofail(mut n: usize, mut a1: usize, mut a2: usize) -> usize {
+    llvm_asm!("sc"
+         : "+{r0}"(n) "+{r3}"(a1) "+{r4}"(a2)
+         :
+         : "cr0" "memory" "r5" "r6" "r7" "r8" "r9" "r10" "r11" "r12"
+         : "volatile");
+    a1
+}
+
+#[inline(always)]
+pub unsafe fn syscall3_nofail(mut n: usize, mut a1: usize, mut a2: usize, mut a3: usize) -> usize {
+    llvm_asm!("sc"
+         : "+{r0}"(n) "+{r3}"(a1) "+{r4}"(a2) "+{r5}"(a3)
+         :
+         : "cr0" "memory" "r6" "r7" "r8" "r9" "r10" "r11" "r12"
+         : "volatile");
+    a1
+}
+
+#[inline(always)]
+pub unsafe fn syscall4_nofail(
+    mut n: usize,
+    mut a1: usize,
+    mut a2: usize,
+    mut a3: usize,
+    mut a4: usize,
 ) -> usize {
-    llvm_asm!("sc
-          bns+ 1f
-          neg $1, $1
-          1:"
+    llvm_asm!("sc"
+         : "+{r0}"(n) "+{r3}"(a1) "+{r4}"(a2) "+{r5}"(a3) "+{r6}"(a4)
+         :
+         : "cr0" "memory" "r7" "r8" "r9" "r10" "r11" "r12"
+         : "volatile");
+    a1
+}
+
+#[inline(always)]
+pub unsafe fn syscall5_nofail(
+    mut n: usize,
+    mut a1: usize,
+    mut a2: usize,
+    mut a3: usize,
+    mut a4: usize,
+    mut a5: usize,
+) -> usize {
+    llvm_asm!("sc"
+         : "+{r0}"(n) "+{r3}"(a1) "+{r4}"(a2) "+{r5}"(a3) "+{r6}"(a4)
+           "+{r7}"(a5)
+         :
+         : "cr0" "memory" "r8" "r9" "r10" "r11" "r12"
+         : "volatile");
+    a1
+}
+
+#[inline(always)]
+pub unsafe fn syscall6_nofail(
+    mut n: usize,
+    mut a1: usize,
+    mut a2: usize,
+    mut a3: usize,
+    mut a4: usize,
+    mut a5: usize,
+    mut a6: usize,
+) -> usize {
+    llvm_asm!("sc"
          : "+{r0}"(n) "+{r3}"(a1) "+{r4}"(a2) "+{r5}"(a3) "+{r6}"(a4)
            "+{r7}"(a5) "+{r8}"(a6)
          :
@@ -133,11 +215,3 @@ pub unsafe fn syscall6(
          : "volatile");
     a1
 }
-
-pub use syscall0 as syscall0_nofail;
-pub use syscall1 as syscall1_nofail;
-pub use syscall2 as syscall2_nofail;
-pub use syscall3 as syscall3_nofail;
-pub use syscall4 as syscall4_nofail;
-pub use syscall5 as syscall5_nofail;
-pub use syscall6 as syscall6_nofail;

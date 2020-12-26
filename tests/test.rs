@@ -27,7 +27,12 @@ fn test_ebadf() {
 
         #[cfg(all(
             target_os = "linux",
-            not(any(target_arch = "mips", target_arch = "mips64"))
+            not(any(
+                target_arch = "mips",
+                target_arch = "mips64",
+                target_arch = "powerpc",
+                target_arch = "powerpc64"
+            ))
         ))]
         assert_eq!(
             syscall_raw!(WRITE, -4isize, MESSAGE.as_ptr(), MESSAGE.len()),
@@ -37,7 +42,15 @@ fn test_ebadf() {
         #[cfg(any(
             target_os = "freebsd",
             target_os = "macos",
-            all(target_os = "linux", any(target_arch = "mips", target_arch = "mips64"))
+            all(
+                target_os = "linux",
+                any(
+                    target_arch = "mips",
+                    target_arch = "mips64",
+                    target_arch = "powerpc",
+                    target_arch = "powerpc64"
+                )
+            )
         ))]
         assert_eq!(
             syscall_raw!(WRITE, -4isize, MESSAGE.as_ptr(), MESSAGE.len()),
@@ -65,13 +78,26 @@ fn test_kill() {
 
         #[cfg(all(
             target_os = "linux",
-            not(any(target_arch = "mips", target_arch = "mips64"))
+            not(any(
+                target_arch = "mips",
+                target_arch = "mips64",
+                target_arch = "powerpc",
+                target_arch = "powerpc64"
+            ))
         ))]
         assert_eq!(syscall_raw!(KILL, 0, 0), 0);
         #[cfg(any(
             target_os = "freebsd",
             target_os = "macos",
-            all(target_os = "linux", any(target_arch = "mips", target_arch = "mips64"))
+            all(
+                target_os = "linux",
+                any(
+                    target_arch = "mips",
+                    target_arch = "mips64",
+                    target_arch = "powerpc",
+                    target_arch = "powerpc64"
+                )
+            )
         ))]
         assert_eq!(syscall_raw!(KILL, 0, 0), (0, false));
 
@@ -89,7 +115,12 @@ fn test_getpid() {
 
     #[cfg(all(
         target_os = "linux",
-        not(any(target_arch = "mips", target_arch = "mips64"))
+        not(any(
+            target_arch = "mips",
+            target_arch = "mips64",
+            target_arch = "powerpc",
+            target_arch = "powerpc64"
+        ))
     ))]
     {
         assert_eq!(unsafe { scall::syscall0(scall::nr::GETPID) }, pid);
@@ -99,7 +130,15 @@ fn test_getpid() {
     #[cfg(any(
         target_os = "freebsd",
         target_os = "macos",
-        all(target_os = "linux", any(target_arch = "mips", target_arch = "mips64"))
+        all(
+            target_os = "linux",
+            any(
+                target_arch = "mips",
+                target_arch = "mips64",
+                target_arch = "powerpc",
+                target_arch = "powerpc64"
+            )
+        )
     ))]
     {
         assert_eq!(unsafe { scall::syscall0(scall::nr::GETPID) }, (pid, false));
