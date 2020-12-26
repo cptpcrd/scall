@@ -14,81 +14,160 @@
 pub mod nr;
 
 #[inline(always)]
-pub unsafe fn syscall0(mut nr: usize) -> usize {
+pub unsafe fn syscall0(mut nr: usize) -> (usize, bool) {
     let success: usize;
     llvm_asm!("syscall"
          : "+{$2}"(nr) "={$7}"(success)
          :
          : "$8" "$9" "$10" "$11" "$12" "$13" "$14" "$15" "$24" "$25" "memory"
          : "volatile");
-    if success == 0 {
-        nr
-    } else {
-        -(nr as isize) as usize
-    }
+    (nr, success != 0)
 }
 
 #[inline(always)]
-pub unsafe fn syscall1(mut nr: usize, a1: usize) -> usize {
+pub unsafe fn syscall1(mut nr: usize, a1: usize) -> (usize, bool) {
     let success: usize;
     llvm_asm!("syscall"
          : "+{$2}"(nr) "={$7}"(success)
          : "{$4}"(a1)
          : "$8" "$9" "$10" "$11" "$12" "$13" "$14" "$15" "$24" "$25" "memory"
          : "volatile");
-    if success == 0 {
-        nr
-    } else {
-        -(nr as isize) as usize
-    }
+    (nr, success != 0)
 }
 
 #[inline(always)]
-pub unsafe fn syscall2(mut nr: usize, a1: usize, a2: usize) -> usize {
+pub unsafe fn syscall2(mut nr: usize, a1: usize, a2: usize) -> (usize, bool) {
     let success: usize;
     llvm_asm!("syscall"
          : "+{$2}"(nr) "={$7}"(success)
          : "{$4}"(a1) "{$5}"(a2)
          : "$8" "$9" "$10" "$11" "$12" "$13" "$14" "$15" "$24" "$25" "memory"
          : "volatile");
-    if success == 0 {
-        nr
-    } else {
-        -(nr as isize) as usize
-    }
+    (nr, success != 0)
 }
 
 #[inline(always)]
-pub unsafe fn syscall3(mut nr: usize, a1: usize, a2: usize, a3: usize) -> usize {
+pub unsafe fn syscall3(mut nr: usize, a1: usize, a2: usize, a3: usize) -> (usize, bool) {
     let success: usize;
     llvm_asm!("syscall"
          : "+{$2}"(nr) "={$7}"(success)
          : "{$4}"(a1) "{$5}"(a2) "{$6}"(a3)
          : "$8" "$9" "$10" "$11" "$12" "$13" "$14" "$15" "$24" "$25" "memory"
          : "volatile");
-    if success == 0 {
-        nr
-    } else {
-        -(nr as isize) as usize
-    }
+    (nr, success != 0)
 }
 
 #[inline(always)]
-pub unsafe fn syscall4(mut nr: usize, a1: usize, a2: usize, a3: usize, mut a4: usize) -> usize {
+pub unsafe fn syscall4(
+    mut nr: usize,
+    a1: usize,
+    a2: usize,
+    a3: usize,
+    mut a4: usize,
+) -> (usize, bool) {
     llvm_asm!("syscall"
          : "+{$2}"(nr) "+{$7}"(a4)
          : "{$4}"(a1) "{$5}"(a2) "{$6}"(a3)
          : "$8" "$9" "$10" "$11" "$12" "$13" "$14" "$15" "$24" "$25" "memory"
          : "volatile");
-    if a4 == 0 {
-        nr
-    } else {
-        -(nr as isize) as usize
-    }
+    (nr, a4 != 0)
 }
 
 #[inline(always)]
 pub unsafe fn syscall5(
+    mut nr: usize,
+    a1: usize,
+    a2: usize,
+    a3: usize,
+    mut a4: usize,
+    a5: usize,
+) -> (usize, bool) {
+    llvm_asm!("syscall"
+         : "+{$2}"(nr) "+{$7}"(a4)
+         : "{$4}"(a1) "{$5}"(a2) "{$6}"(a3) "{$8}"(a5)
+         : "$9" "$10" "$11" "$12" "$13" "$14" "$15" "$24" "$25" "memory"
+         : "volatile");
+    (nr, a4 != 0)
+}
+
+#[inline(always)]
+pub unsafe fn syscall6(
+    mut nr: usize,
+    a1: usize,
+    a2: usize,
+    a3: usize,
+    mut a4: usize,
+    a5: usize,
+    a6: usize,
+) -> (usize, bool) {
+    llvm_asm!("syscall"
+         : "+{$2}"(nr) "+{$7}"(a4)
+         : "{$4}"(a1) "{$5}"(a2) "{$6}"(a3) "{$8}"(a5) "{$9}"(a6)
+         : "$10" "$11" "$12" "$13" "$14" "$15" "$24" "$25" "memory"
+         : "volatile");
+    (nr, a4 != 0)
+}
+
+#[inline(always)]
+pub unsafe fn syscall0_nofail(mut nr: usize) -> usize {
+    llvm_asm!("syscall"
+         : "+{$2}"(nr)
+         :
+         : "$7" "$8" "$9" "$10" "$11" "$12" "$13" "$14" "$15" "$24" "$25" "memory"
+         : "volatile");
+    nr
+}
+
+#[inline(always)]
+pub unsafe fn syscall1_nofail(mut nr: usize, a1: usize) -> usize {
+    llvm_asm!("syscall"
+         : "+{$2}"(nr)
+         : "{$4}"(a1)
+         : "$7" "$8" "$9" "$10" "$11" "$12" "$13" "$14" "$15" "$24" "$25" "memory"
+         : "volatile");
+    nr
+}
+
+#[inline(always)]
+pub unsafe fn syscall2_nofail(mut nr: usize, a1: usize, a2: usize) -> usize {
+    llvm_asm!("syscall"
+         : "+{$2}"(nr)
+         : "{$4}"(a1) "{$5}"(a2)
+         : "$7" "$8" "$9" "$10" "$11" "$12" "$13" "$14" "$15" "$24" "$25" "memory"
+         : "volatile");
+    nr
+}
+
+#[inline(always)]
+pub unsafe fn syscall3_nofail(mut nr: usize, a1: usize, a2: usize, a3: usize) -> usize {
+    llvm_asm!("syscall"
+         : "+{$2}"(nr)
+         : "{$4}"(a1) "{$5}"(a2) "{$6}"(a3)
+         : "$7" "$8" "$9" "$10" "$11" "$12" "$13" "$14" "$15" "$24" "$25" "memory"
+         : "volatile");
+    nr
+}
+
+#[allow(unused_assignments, unused_variables)]
+#[inline(always)]
+pub unsafe fn syscall4_nofail(
+    mut nr: usize,
+    a1: usize,
+    a2: usize,
+    a3: usize,
+    mut a4: usize,
+) -> usize {
+    llvm_asm!("syscall"
+         : "+{$2}"(nr) "+{$7}"(a4)
+         : "{$4}"(a1) "{$5}"(a2) "{$6}"(a3)
+         : "$8" "$9" "$10" "$11" "$12" "$13" "$14" "$15" "$24" "$25" "memory"
+         : "volatile");
+    nr
+}
+
+#[allow(unused_assignments, unused_variables)]
+#[inline(always)]
+pub unsafe fn syscall5_nofail(
     mut nr: usize,
     a1: usize,
     a2: usize,
@@ -101,15 +180,12 @@ pub unsafe fn syscall5(
          : "{$4}"(a1) "{$5}"(a2) "{$6}"(a3) "{$8}"(a5)
          : "$9" "$10" "$11" "$12" "$13" "$14" "$15" "$24" "$25" "memory"
          : "volatile");
-    if a4 == 0 {
-        nr
-    } else {
-        -(nr as isize) as usize
-    }
+    nr
 }
 
+#[allow(unused_assignments, unused_variables)]
 #[inline(always)]
-pub unsafe fn syscall6(
+pub unsafe fn syscall6_nofail(
     mut nr: usize,
     a1: usize,
     a2: usize,
@@ -123,17 +199,5 @@ pub unsafe fn syscall6(
          : "{$4}"(a1) "{$5}"(a2) "{$6}"(a3) "{$8}"(a5) "{$9}"(a6)
          : "$10" "$11" "$12" "$13" "$14" "$15" "$24" "$25" "memory"
          : "volatile");
-    if a4 == 0 {
-        nr
-    } else {
-        -(nr as isize) as usize
-    }
+    nr
 }
-
-pub use syscall0 as syscall0_nofail;
-pub use syscall1 as syscall1_nofail;
-pub use syscall2 as syscall2_nofail;
-pub use syscall3 as syscall3_nofail;
-pub use syscall4 as syscall4_nofail;
-pub use syscall5 as syscall5_nofail;
-pub use syscall6 as syscall6_nofail;

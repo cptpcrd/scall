@@ -12,11 +12,11 @@
 ///
 /// **Note**: You should use [`syscall!`] or [`syscall_nofail!`] in most cases!
 ///
-/// On Linux, this returns a `usize` representing the return value of the syscall (if an error
-/// occurred, the error code is encoded into the result). On macOS and FreeBSD, it returns a
-/// `(usize, bool)` tuple indicating 1) the return value and 2) whether an error occurred.
-/// ([`RawResult`] is an alias for this type, and it can be "decoded" with
-/// [`decode_raw_result()`].)
+/// On Linux (except on mips/mips64), this returns a `usize` representing the return value of the
+/// syscall (if an error occurred, the error code is encoded into the result). On macOS and FreeBSD
+/// (and on Linux mips/mips64), it returns a `(usize, bool)` tuple indicating 1) the return value
+/// and 2) whether an error occurred. ([`RawResult`] is an alias for this type, and it can be
+/// "decoded" with [`decode_raw_result()`].)
 ///
 /// Note: [`syscall!`] or [`syscall_nofail!`] should be preferred for most purposes. However, this
 /// macro may be useful if you need to make a series of syscalls quickly, *then* check the return

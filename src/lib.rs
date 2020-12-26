@@ -88,7 +88,10 @@ mod platform;
 ///
 /// [`syscall_raw!`]: ./macro.syscall_raw.html
 /// [`decode_raw_result()`]: ./fn.decode_raw_result.html
-#[cfg(target_os = "linux")]
+#[cfg(all(
+    target_os = "linux",
+    not(any(target_arch = "mips", target_arch = "mips64"))
+))]
 pub type RawResult = usize;
 /// The type returned by [`syscall_raw!`].
 ///
@@ -96,7 +99,11 @@ pub type RawResult = usize;
 ///
 /// [`syscall_raw!`]: ./macro.syscall_raw.html
 /// [`decode_raw_result()`]: ./fn.decode_raw_result.html
-#[cfg(any(target_os = "freebsd", target_os = "macos"))]
+#[cfg(any(
+    target_os = "freebsd",
+    target_os = "macos",
+    all(target_os = "linux", any(target_arch = "mips", target_arch = "mips64"))
+))]
 pub type RawResult = (usize, bool);
 
 /// "Decode" a result from [`syscall_raw!`].
@@ -109,13 +116,20 @@ pub type RawResult = (usize, bool);
 /// [`syscall0()`]: ./fn.syscall0.html
 #[inline(always)]
 pub fn decode_raw_result(res: RawResult) -> Result<usize, i32> {
-    #[cfg(target_os = "linux")]
+    #[cfg(all(
+        target_os = "linux",
+        not(any(target_arch = "mips", target_arch = "mips64"))
+    ))]
     return if res > -4096isize as usize {
         Err((!res + 1) as i32)
     } else {
         Ok(res)
     };
 
-    #[cfg(any(target_os = "freebsd", target_os = "macos"))]
+    #[cfg(any(
+        target_os = "freebsd",
+        target_os = "macos",
+        all(target_os = "linux", any(target_arch = "mips", target_arch = "mips64"))
+    ))]
     return if res.1 { Err(res.0 as i32) } else { Ok(res.0) };
 }
