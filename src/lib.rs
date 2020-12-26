@@ -25,6 +25,7 @@
 //! more advanced use cases.*
 
 #![deny(warnings)]
+#![allow(clippy::missing_safety_doc)]
 #![feature(llvm_asm)]
 #![no_std]
 

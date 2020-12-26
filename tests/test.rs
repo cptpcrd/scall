@@ -11,7 +11,7 @@ use scall::{syscall, syscall_nofail, syscall_raw};
 
 #[test]
 fn test_ebadf() {
-    static MESSAGE: &'static str = "Hello, world!";
+    static MESSAGE: &str = "Hello, world!";
 
     unsafe {
         assert_eq!(
@@ -136,7 +136,7 @@ fn test_procctl() {
     unsafe {
         let pid = syscall!(GETPID).unwrap();
 
-        syscall!(PROCCTL, libc::P_PID, pid, PROC_REAP_RELEASE, 0);
+        syscall_nofail!(PROCCTL, libc::P_PID, pid, PROC_REAP_RELEASE, 0);
 
         assert_eq!(
             syscall!(PROCCTL, libc::P_PID, pid, PROC_REAP_ACQUIRE, 0),
