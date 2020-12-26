@@ -12,70 +12,78 @@
 pub mod nr;
 
 #[inline(always)]
-pub unsafe fn syscall0(mut n: usize) -> usize {
-    llvm_asm!("int $$0x80"
-         : "+{eax}"(n)
-         :
-         : "memory" "cc"
-         : "volatile");
-    n
+pub unsafe fn syscall0(n: usize) -> usize {
+    let ret: usize;
+    asm!(
+        "int $$0x80",
+        inout("eax") n => ret,
+    );
+    ret
 }
 
 #[inline(always)]
-pub unsafe fn syscall1(mut n: usize, a1: usize) -> usize {
-    llvm_asm!("int $$0x80"
-         : "+{eax}"(n)
-         : "{ebx}"(a1)
-         : "memory" "cc"
-         : "volatile");
-    n
+pub unsafe fn syscall1(n: usize, a1: usize) -> usize {
+    let ret: usize;
+    asm!(
+        "int $$0x80",
+        inout("eax") n => ret,
+        in("ebx") a1,
+    );
+    ret
 }
 
 #[inline(always)]
-pub unsafe fn syscall2(mut n: usize, a1: usize, a2: usize) -> usize {
-    llvm_asm!("int $$0x80"
-         : "+{eax}"(n)
-         : "{ebx}"(a1) "{ecx}"(a2)
-         : "memory" "cc"
-         : "volatile");
-    n
+pub unsafe fn syscall2(n: usize, a1: usize, a2: usize) -> usize {
+    let ret: usize;
+    asm!(
+        "int $$0x80",
+        inout("eax") n => ret,
+        in("ebx") a1,
+        in("ecx") a2,
+    );
+    ret
 }
 
 #[inline(always)]
-pub unsafe fn syscall3(mut n: usize, a1: usize, a2: usize, a3: usize) -> usize {
-    llvm_asm!("int $$0x80"
-         : "+{eax}"(n)
-         : "{ebx}"(a1) "{ecx}"(a2) "{edx}"(a3)
-         : "memory" "cc"
-         : "volatile");
-    n
+pub unsafe fn syscall3(n: usize, a1: usize, a2: usize, a3: usize) -> usize {
+    let ret: usize;
+    asm!(
+        "int $$0x80",
+        inout("eax") n => ret,
+        in("ebx") a1,
+        in("ecx") a2,
+        in("edx") a3,
+    );
+    ret
 }
 
 #[inline(always)]
-pub unsafe fn syscall4(mut n: usize, a1: usize, a2: usize, a3: usize, a4: usize) -> usize {
-    llvm_asm!("int $$0x80"
-         : "+{eax}"(n)
-         : "{ebx}"(a1) "{ecx}"(a2) "{edx}"(a3) "{esi}"(a4)
-         : "memory" "cc"
-         : "volatile");
-    n
+pub unsafe fn syscall4(n: usize, a1: usize, a2: usize, a3: usize, a4: usize) -> usize {
+    let ret: usize;
+    asm!(
+        "int $$0x80",
+        inout("eax") n => ret,
+        in("ebx") a1,
+        in("ecx") a2,
+        in("edx") a3,
+        in("esi") a4,
+    );
+    ret
 }
 
 #[inline(always)]
-pub unsafe fn syscall5(
-    mut n: usize,
-    a1: usize,
-    a2: usize,
-    a3: usize,
-    a4: usize,
-    a5: usize,
-) -> usize {
-    llvm_asm!("int $$0x80"
-         : "+{eax}"(n)
-         : "{ebx}"(a1) "{ecx}"(a2) "{edx}"(a3) "{esi}"(a4) "{edi}"(a5)
-         : "memory" "cc"
-         : "volatile");
-    n
+pub unsafe fn syscall5(n: usize, a1: usize, a2: usize, a3: usize, a4: usize, a5: usize) -> usize {
+    let ret: usize;
+    asm!(
+        "int $$0x80",
+        inout("eax") n => ret,
+        in("ebx") a1,
+        in("ecx") a2,
+        in("edx") a3,
+        in("esi") a4,
+        in("edi") a5,
+    );
+    ret
 }
 
 #[inline(always)]
@@ -120,20 +128,24 @@ pub unsafe fn syscall6(
     // and manually save restore ebp.
     let args = [n, a1, a2, a3, a4, a5, a6];
 
-    llvm_asm!("push %ebp
-          movl 24(%eax), %ebp
-          movl 20(%eax), %edi
-          movl 16(%eax), %esi
-          movl 12(%eax), %edx
-          movl  8(%eax), %ecx
-          movl  4(%eax), %ebx
-          movl  0(%eax), %eax
-          int $$0x80
-          pop %ebp"
-         : "={eax}"(ret)
-         : "{eax}"(&args)
-         : "ebx" "ecx" "edx" "esi" "edi" "ebp" "memory" "cc"
-         : "volatile");
+    asm!(
+        "push ebp",
+        "mov ebp, [eax + 24]",
+        "mov edi, [eax + 20]",
+        "mov esi, [eax + 16]",
+        "mov edx, [eax + 12]",
+        "mov ecx, [eax + 8]",
+        "mov ebx, [eax + 4]",
+        "mov eax, [eax + 0]",
+        "int $$0x80",
+        "pop ebp",
+        inout("eax") args.as_ptr() => ret,
+        out("ebx") _,
+        out("ecx") _,
+        out("edx") _,
+        out("esi") _,
+        out("edi") _,
+    );
     ret
 }
 

@@ -16,68 +16,86 @@ const MACOS_SYSCALL_PREFIX: usize = 33554432;
 #[inline(always)]
 pub unsafe fn syscall0(n: usize) -> (usize, bool) {
     let ret: usize;
-    let is_err: bool;
-    llvm_asm!("
-        syscall
-        adcb %bl, %bl"
-        : "={rax}"(ret), "={bl}"(is_err)
-        : "{rax}"(n + MACOS_SYSCALL_PREFIX), "{bl}"(0)
-        : "rcx", "r11", "memory"
-        : "volatile");
-    (ret, is_err)
+    let is_err: u8;
+    asm!(
+        "syscall",
+        "adc {0}, {0}",
+        inout(reg_byte) 0u8 => is_err,
+        inout("rax") n + MACOS_SYSCALL_PREFIX => ret,
+        out("rcx") _,
+        out("r11") _,
+    );
+    (ret, is_err != 0)
 }
 
 #[inline(always)]
 pub unsafe fn syscall1(n: usize, a1: usize) -> (usize, bool) {
     let ret: usize;
-    let is_err: bool;
-    llvm_asm!("
-        syscall
-        adcb %bl, %bl" : "={rax}"(ret), "={bl}"(is_err)
-        : "{rax}"(n + MACOS_SYSCALL_PREFIX), "{rdi}"(a1), "{bl}"(0)
-        : "rcx", "r11", "memory"
-        : "volatile");
-    (ret, is_err)
+    let is_err: u8;
+    asm!(
+        "syscall",
+        "adc {0}, {0}",
+        inout(reg_byte) 0u8 => is_err,
+        inout("rax") n + MACOS_SYSCALL_PREFIX => ret,
+        in("rdi") a1,
+        out("rcx") _,
+        out("r11") _,
+    );
+    (ret, is_err != 0)
 }
 
 #[inline(always)]
 pub unsafe fn syscall2(n: usize, a1: usize, a2: usize) -> (usize, bool) {
     let ret: usize;
-    let is_err: bool;
-    llvm_asm!("
-        syscall
-        adcb %bl, %bl" : "={rax}"(ret), "={bl}"(is_err)
-        : "{rax}"(n + MACOS_SYSCALL_PREFIX), "{rdi}"(a1), "{rsi}"(a2), "{bl}"(0)
-        : "rcx", "r11", "memory"
-        : "volatile");
-    (ret, is_err)
+    let is_err: u8;
+    asm!(
+        "syscall",
+        "adc {0}, {0}",
+        inout(reg_byte) 0u8 => is_err,
+        inout("rax") n + MACOS_SYSCALL_PREFIX => ret,
+        in("rdi") a1,
+        in("rsi") a2,
+        out("rcx") _,
+        out("r11") _,
+    );
+    (ret, is_err != 0)
 }
 
 #[inline(always)]
 pub unsafe fn syscall3(n: usize, a1: usize, a2: usize, a3: usize) -> (usize, bool) {
     let ret: usize;
-    let is_err: bool;
-    llvm_asm!("
-        syscall
-        adcb %bl, %bl" : "={rax}"(ret), "={bl}"(is_err)
-        : "{rax}"(n + MACOS_SYSCALL_PREFIX), "{rdi}"(a1), "{rsi}"(a2), "{rdx}"(a3), "{bl}"(0)
-        : "rcx", "r11", "memory"
-        : "volatile");
-    (ret, is_err)
+    let is_err: u8;
+    asm!(
+        "syscall",
+        "adc {0}, {0}",
+        inout(reg_byte) 0u8 => is_err,
+        inout("rax") n + MACOS_SYSCALL_PREFIX => ret,
+        in("rdi") a1,
+        in("rsi") a2,
+        in("rdx") a3,
+        out("rcx") _,
+        out("r11") _,
+    );
+    (ret, is_err != 0)
 }
 
 #[inline(always)]
 pub unsafe fn syscall4(n: usize, a1: usize, a2: usize, a3: usize, a4: usize) -> (usize, bool) {
     let ret: usize;
-    let is_err: bool;
-    llvm_asm!("
-        syscall
-        adcb %bl, %bl" : "={rax}"(ret), "={bl}"(is_err)
-        : "{rax}"(n + MACOS_SYSCALL_PREFIX), "{rdi}"(a1), "{rsi}"(a2), "{rdx}"(a3),
-                     "{r10}"(a4), "{bl}"(0)
-        : "rcx", "r11", "memory"
-        : "volatile");
-    (ret, is_err)
+    let is_err: u8;
+    asm!(
+        "syscall",
+        "adc {0}, {0}",
+        inout(reg_byte) 0u8 => is_err,
+        inout("rax") n + MACOS_SYSCALL_PREFIX => ret,
+        in("rdi") a1,
+        in("rsi") a2,
+        in("rdx") a3,
+        in("r10") a4,
+        out("rcx") _,
+        out("r11") _,
+    );
+    (ret, is_err != 0)
 }
 
 #[inline(always)]
@@ -90,15 +108,21 @@ pub unsafe fn syscall5(
     a5: usize,
 ) -> (usize, bool) {
     let ret: usize;
-    let is_err: bool;
-    llvm_asm!("
-        syscall
-        adcb %bl, %bl" : "={rax}"(ret), "={bl}"(is_err)
-        : "{rax}"(n + MACOS_SYSCALL_PREFIX), "{rdi}"(a1), "{rsi}"(a2), "{rdx}"(a3),
-                     "{r10}"(a4), "{r8}"(a5), "{bl}"(0)
-        : "rcx", "r11", "memory"
-        : "volatile");
-    (ret, is_err)
+    let is_err: u8;
+    asm!(
+        "syscall",
+        "adc {0}, {0}",
+        inout(reg_byte) 0u8 => is_err,
+        inout("rax") n + MACOS_SYSCALL_PREFIX => ret,
+        in("rdi") a1,
+        in("rsi") a2,
+        in("rdx") a3,
+        in("r10") a4,
+        in("r8") a5,
+        out("rcx") _,
+        out("r11") _,
+    );
+    (ret, is_err != 0)
 }
 
 #[inline(always)]
@@ -112,66 +136,91 @@ pub unsafe fn syscall6(
     a6: usize,
 ) -> (usize, bool) {
     let ret: usize;
-    let is_err: bool;
-    llvm_asm!("
-        syscall
-        adcb %bl, %bl" : "={rax}"(ret), "={bl}"(is_err)
-        : "{rax}"(n + MACOS_SYSCALL_PREFIX), "{rdi}"(a1), "{rsi}"(a2), "{rdx}"(a3),
-                     "{r10}"(a4), "{r8}"(a5), "{r9}"(a6), "{bl}"(0)
-        : "rcx", "r11", "memory"
-        : "volatile");
-    (ret, is_err)
+    let is_err: u8;
+    asm!(
+        "syscall",
+        "adc {0}, {0}",
+        inout(reg_byte) 0u8 => is_err,
+        inout("rax") n + MACOS_SYSCALL_PREFIX => ret,
+        in("rdi") a1,
+        in("rsi") a2,
+        in("rdx") a3,
+        in("r10") a4,
+        in("r8") a5,
+        in("r9") a6,
+        out("rcx") _,
+        out("r11") _,
+    );
+    (ret, is_err != 0)
 }
 
 #[inline(always)]
 pub unsafe fn syscall0_nofail(n: usize) -> usize {
     let ret: usize;
-    llvm_asm!("syscall"
-        : "={rax}"(ret)
-        : "{rax}"(n + MACOS_SYSCALL_PREFIX)
-        : "rcx", "r11", "memory"
-        : "volatile");
+    asm!(
+        "syscall",
+        inout("rax") n + MACOS_SYSCALL_PREFIX => ret,
+        out("rcx") _,
+        out("r11") _,
+    );
     ret
 }
 
 #[inline(always)]
 pub unsafe fn syscall1_nofail(n: usize, a1: usize) -> usize {
     let ret: usize;
-    llvm_asm!("syscall" : "={rax}"(ret)
-        : "{rax}"(n + MACOS_SYSCALL_PREFIX), "{rdi}"(a1)
-        : "rcx", "r11", "memory"
-        : "volatile");
+    asm!(
+        "syscall",
+        inout("rax") n + MACOS_SYSCALL_PREFIX => ret,
+        in("rdi") a1,
+        out("rcx") _,
+        out("r11") _,
+    );
     ret
 }
 
 #[inline(always)]
 pub unsafe fn syscall2_nofail(n: usize, a1: usize, a2: usize) -> usize {
     let ret: usize;
-    llvm_asm!("syscall" : "={rax}"(ret)
-        : "{rax}"(n + MACOS_SYSCALL_PREFIX), "{rdi}"(a1), "{rsi}"(a2)
-        : "rcx", "r11", "memory"
-        : "volatile");
+    asm!(
+        "syscall",
+        inout("rax") n + MACOS_SYSCALL_PREFIX => ret,
+        in("rdi") a1,
+        in("rsi") a2,
+        out("rcx") _,
+        out("r11") _,
+    );
     ret
 }
 
 #[inline(always)]
 pub unsafe fn syscall3_nofail(n: usize, a1: usize, a2: usize, a3: usize) -> usize {
     let ret: usize;
-    llvm_asm!("syscall" : "={rax}"(ret)
-        : "{rax}"(n + MACOS_SYSCALL_PREFIX), "{rdi}"(a1), "{rsi}"(a2), "{rdx}"(a3)
-        : "rcx", "r11", "memory"
-        : "volatile");
+    asm!(
+        "syscall",
+        inout("rax") n + MACOS_SYSCALL_PREFIX => ret,
+        in("rdi") a1,
+        in("rsi") a2,
+        in("rdx") a3,
+        out("rcx") _,
+        out("r11") _,
+    );
     ret
 }
 
 #[inline(always)]
 pub unsafe fn syscall4_nofail(n: usize, a1: usize, a2: usize, a3: usize, a4: usize) -> usize {
     let ret: usize;
-    llvm_asm!("syscall" : "={rax}"(ret)
-        : "{rax}"(n + MACOS_SYSCALL_PREFIX), "{rdi}"(a1), "{rsi}"(a2), "{rdx}"(a3),
-                     "{r10}"(a4)
-        : "rcx", "r11", "memory"
-        : "volatile");
+    asm!(
+        "syscall",
+        inout("rax") n + MACOS_SYSCALL_PREFIX => ret,
+        in("rdi") a1,
+        in("rsi") a2,
+        in("rdx") a3,
+        in("r10") a4,
+        out("rcx") _,
+        out("r11") _,
+    );
     ret
 }
 
@@ -185,11 +234,17 @@ pub unsafe fn syscall5_nofail(
     a5: usize,
 ) -> usize {
     let ret: usize;
-    llvm_asm!("syscall" : "={rax}"(ret)
-        : "{rax}"(n + MACOS_SYSCALL_PREFIX), "{rdi}"(a1), "{rsi}"(a2), "{rdx}"(a3),
-                     "{r10}"(a4), "{r8}"(a5)
-        : "rcx", "r11", "memory"
-        : "volatile");
+    asm!(
+        "syscall",
+        inout("rax") n + MACOS_SYSCALL_PREFIX => ret,
+        in("rdi") a1,
+        in("rsi") a2,
+        in("rdx") a3,
+        in("r10") a4,
+        in("r8") a5,
+        out("rcx") _,
+        out("r11") _,
+    );
     ret
 }
 
@@ -204,10 +259,17 @@ pub unsafe fn syscall6_nofail(
     a6: usize,
 ) -> usize {
     let ret: usize;
-    llvm_asm!("syscall" : "={rax}"(ret)
-        : "{rax}"(n + MACOS_SYSCALL_PREFIX), "{rdi}"(a1), "{rsi}"(a2), "{rdx}"(a3),
-                     "{r10}"(a4), "{r8}"(a5), "{r9}"(a6)
-        : "rcx", "r11", "memory"
-        : "volatile");
+    asm!(
+        "syscall",
+        inout("rax") n + MACOS_SYSCALL_PREFIX => ret,
+        in("rdi") a1,
+        in("rsi") a2,
+        in("rdx") a3,
+        in("r10") a4,
+        in("r8") a5,
+        in("r9") a6,
+        out("rcx") _,
+        out("r11") _,
+    );
     ret
 }

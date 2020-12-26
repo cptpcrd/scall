@@ -14,65 +14,76 @@ pub mod nr;
 #[inline(always)]
 pub unsafe fn syscall0(n: usize) -> usize {
     let ret: usize;
-    llvm_asm!("swi #0"
-         : "={r0}"(ret)
-         : "{r7}"(n)
-         : "memory" "cc"
-         : "volatile");
+    asm!(
+        "swi #0",
+        in("r7") n,
+        out("r0") ret,
+    );
     ret
 }
 
 #[inline(always)]
 pub unsafe fn syscall1(n: usize, a1: usize) -> usize {
     let ret: usize;
-    llvm_asm!("swi #0"
-         : "={r0}"(ret)
-         : "{r7}"(n) "{r0}"(a1)
-         : "memory" "cc"
-         : "volatile");
+    asm!(
+        "swi #0",
+        in("r7") n,
+        inout("r0") a1 => ret,
+    );
     ret
 }
 
 #[inline(always)]
 pub unsafe fn syscall2(n: usize, a1: usize, a2: usize) -> usize {
     let ret: usize;
-    llvm_asm!("swi #0"
-         : "={r0}"(ret)
-         : "{r7}"(n) "{r0}"(a1) "{r1}"(a2)
-         : "memory" "cc"
-         : "volatile");
+    asm!(
+        "swi #0",
+        in("r7") n,
+        inout("r0") a1 => ret,
+        in("r1") a2,
+    );
     ret
 }
 
 #[inline(always)]
 pub unsafe fn syscall3(n: usize, a1: usize, a2: usize, a3: usize) -> usize {
     let ret: usize;
-    llvm_asm!("swi #0"
-         : "={r0}"(ret)
-         : "{r7}"(n) "{r0}"(a1) "{r1}"(a2) "{r2}"(a3)
-         : "memory" "cc"
-         : "volatile");
+    asm!(
+        "swi #0",
+        in("r7") n,
+        inout("r0") a1 => ret,
+        in("r1") a2,
+        in("r2") a3,
+    );
     ret
 }
 
 #[inline(always)]
 pub unsafe fn syscall4(n: usize, a1: usize, a2: usize, a3: usize, a4: usize) -> usize {
     let ret: usize;
-    llvm_asm!("swi #0"
-         : "={r0}"(ret)
-         : "{r7}"(n) "{r0}"(a1) "{r1}"(a2) "{r2}"(a3) "{r3}"(a4)
-         : "memory" "cc"
-         : "volatile");
+    asm!(
+        "swi #0",
+        in("r7") n,
+        inout("r0") a1 => ret,
+        in("r1") a2,
+        in("r2") a3,
+        in("r3") a4,
+    );
     ret
 }
 
 #[inline(always)]
 pub unsafe fn syscall5(n: usize, a1: usize, a2: usize, a3: usize, a4: usize, a5: usize) -> usize {
     let ret: usize;
-    llvm_asm!("swi #0" : "={r0}"(ret)
-         : "{r7}"(n) "{r0}"(a1) "{r1}"(a2) "{r2}"(a3) "{r3}"(a4) "{r4}"(a5)
-         : "memory" "cc"
-         : "volatile");
+    asm!(
+        "swi #0",
+        in("r7") n,
+        inout("r0") a1 => ret,
+        in("r1") a2,
+        in("r2") a3,
+        in("r3") a4,
+        in("r4") a5,
+    );
     ret
 }
 
@@ -87,12 +98,16 @@ pub unsafe fn syscall6(
     a6: usize,
 ) -> usize {
     let ret: usize;
-    llvm_asm!("swi #0"
-         : "={r0}"(ret)
-         : "{r7}"(n) "{r0}"(a1) "{r1}"(a2) "{r2}"(a3) "{r3}"(a4) "{r4}"(a5)
-           "{r5}"(a6)
-         : "memory" "cc"
-         : "volatile");
+    asm!(
+        "swi #0",
+        in("r7") n,
+        inout("r0") a1 => ret,
+        in("r1") a2,
+        in("r2") a3,
+        in("r3") a4,
+        in("r4") a5,
+        in("r5") a6,
+    );
     ret
 }
 
@@ -108,12 +123,20 @@ pub unsafe fn syscall7(
     a7: usize,
 ) -> usize {
     let ret: usize;
-    llvm_asm!("swi #0"
-         : "={r0}"(ret)
-         : "{r7}"(n) "{r0}"(a1) "{r1}"(a2) "{r2}"(a3) "{r3}"(a4) "{r4}"(a5)
-           "{r5}"(a6) "{r6}"(a7)
-         : "memory" "cc"
-         : "volatile");
+    asm!(
+        "push {{r6}}",
+        "mov r6, r8",
+        "swi #0",
+        "pop {{r6}}",
+        in("r7") n,
+        inout("r0") a1 => ret,
+        in("r1") a2,
+        in("r2") a3,
+        in("r3") a4,
+        in("r4") a5,
+        in("r5") a6,
+        in("r8") a7,
+    );
     ret
 }
 
