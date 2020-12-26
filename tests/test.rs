@@ -16,7 +16,7 @@ fn test_ebadf() {
     unsafe {
         assert_eq!(
             syscall!(WRITE, -4isize, MESSAGE.as_ptr(), MESSAGE.len()),
-            Err(9)
+            Err(libc::EBADF)
         );
 
         // Note: This is `assert_ne`, NOT `assert_eq`.
@@ -28,13 +28,13 @@ fn test_ebadf() {
         #[cfg(target_os = "linux")]
         assert_eq!(
             syscall_raw!(WRITE, -4isize, MESSAGE.as_ptr(), MESSAGE.len()),
-            -9isize as usize
+            -libc::EBADF as usize
         );
 
         #[cfg(any(target_os = "freebsd", target_os = "macos"))]
         assert_eq!(
             syscall_raw!(WRITE, -4isize, MESSAGE.as_ptr(), MESSAGE.len()),
-            (9, true)
+            (libc::EBADF as usize, true)
         );
     }
 }
@@ -88,31 +88,21 @@ fn test_getpid() {
 
 #[test]
 fn test_faccessat() {
-    #[cfg(any(target_os = "freebsd", target_os = "linux"))]
-    const AT_FDCWD: i32 = -100;
-    #[cfg(target_os = "macos")]
-    const AT_FDCWD: i32 = -2;
-
-    const F_OK: i32 = 0;
-
-    #[cfg(target_os = "linux")]
-    const ENOSYS: i32 = 38;
-
     unsafe {
         assert_eq!(
-            syscall!(FACCESSAT, AT_FDCWD, b"/\0".as_ptr(), F_OK, 0),
+            syscall!(FACCESSAT, libc::AT_FDCWD, b"/\0".as_ptr(), libc::F_OK, 0),
             Ok(0)
         );
 
         assert_eq!(
-            syscall_nofail!(FACCESSAT, AT_FDCWD, b"/\0".as_ptr(), F_OK, 0),
+            syscall_nofail!(FACCESSAT, libc::AT_FDCWD, b"/\0".as_ptr(), libc::F_OK, 0),
             0
         );
         #[cfg(target_os = "linux")]
         {
-            let res = syscall!(FACCESSAT2, AT_FDCWD, b"/\0".as_ptr(), F_OK, 0);
+            let res = syscall!(FACCESSAT2, libc::AT_FDCWD, b"/\0".as_ptr(), libc::F_OK, 0);
 
-            assert!(res == Ok(0) || res == Err(ENOSYS), "{:?}", res);
+            assert!(res == Ok(0) || res == Err(libc::ENOSYS), "{:?}", res);
         }
     }
 }
@@ -120,50 +110,50 @@ fn test_faccessat() {
 #[cfg(target_os = "linux")]
 #[test]
 fn test_prctl() {
-    const PR_GET_KEEPCAPS: usize = 7;
-    const PR_SET_KEEPCAPS: usize = 8;
-
     unsafe {
-        let old_keepcaps = syscall!(PRCTL, PR_GET_KEEPCAPS, 0, 0, 0, 0).unwrap();
+        let old_keepcaps = syscall!(PRCTL, libc::PR_GET_KEEPCAPS, 0, 0, 0, 0).unwrap();
 
-        syscall!(PRCTL, PR_SET_KEEPCAPS, 0, 0, 0, 0).unwrap();
+        syscall!(PRCTL, libc::PR_SET_KEEPCAPS, 0, 0, 0, 0).unwrap();
 
-        assert_eq!(syscall!(PRCTL, PR_GET_KEEPCAPS, 0, 0, 0, 0), Ok(0));
-        assert_eq!(syscall_nofail!(PRCTL, PR_GET_KEEPCAPS, 0, 0, 0, 0), 0);
+        assert_eq!(syscall!(PRCTL, libc::PR_GET_KEEPCAPS, 0, 0, 0, 0), Ok(0));
+        assert_eq!(syscall_nofail!(PRCTL, libc::PR_GET_KEEPCAPS, 0, 0, 0, 0), 0);
 
-        syscall!(PRCTL, PR_SET_KEEPCAPS, 1, 0, 0, 0).unwrap();
+        syscall!(PRCTL, libc::PR_SET_KEEPCAPS, 1, 0, 0, 0).unwrap();
 
-        assert_eq!(syscall!(PRCTL, PR_GET_KEEPCAPS, 0, 0, 0, 0), Ok(1));
-        assert_eq!(syscall_nofail!(PRCTL, PR_GET_KEEPCAPS, 0, 0, 0, 0), 1);
+        assert_eq!(syscall!(PRCTL, libc::PR_GET_KEEPCAPS, 0, 0, 0, 0), Ok(1));
+        assert_eq!(syscall_nofail!(PRCTL, libc::PR_GET_KEEPCAPS, 0, 0, 0, 0), 1);
 
-        syscall!(PRCTL, PR_GET_KEEPCAPS, old_keepcaps, 0, 0, 0).unwrap();
+        syscall!(PRCTL, libc::PR_GET_KEEPCAPS, old_keepcaps, 0, 0, 0).unwrap();
     }
 }
 
 #[cfg(target_os = "freebsd")]
 #[test]
 fn test_procctl() {
-    const P_PID: usize = 0;
     const PROC_REAP_ACQUIRE: usize = 2;
     const PROC_REAP_RELEASE: usize = 3;
-    const EBUSY: i32 = 16;
-    const EINVAL: i32 = 22;
 
     unsafe {
         let pid = syscall!(GETPID).unwrap();
 
-        syscall!(PROCCTL, P_PID, pid, PROC_REAP_RELEASE, 0);
+        syscall!(PROCCTL, libc::P_PID, pid, PROC_REAP_RELEASE, 0);
 
-        assert_eq!(syscall!(PROCCTL, P_PID, pid, PROC_REAP_ACQUIRE, 0), Ok(0));
         assert_eq!(
-            syscall!(PROCCTL, P_PID, pid, PROC_REAP_ACQUIRE, 0),
-            Err(EBUSY)
+            syscall!(PROCCTL, libc::P_PID, pid, PROC_REAP_ACQUIRE, 0),
+            Ok(0)
+        );
+        assert_eq!(
+            syscall!(PROCCTL, libc::P_PID, pid, PROC_REAP_ACQUIRE, 0),
+            Err(libc::EBUSY)
         );
 
-        assert_eq!(syscall!(PROCCTL, P_PID, pid, PROC_REAP_RELEASE, 0), Ok(0));
         assert_eq!(
-            syscall!(PROCCTL, P_PID, pid, PROC_REAP_RELEASE, 0),
-            Err(EINVAL)
+            syscall!(PROCCTL, libc::P_PID, pid, PROC_REAP_RELEASE, 0),
+            Ok(0)
+        );
+        assert_eq!(
+            syscall!(PROCCTL, libc::P_PID, pid, PROC_REAP_RELEASE, 0),
+            Err(libc::EINVAL)
         );
     }
 }
