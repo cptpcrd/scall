@@ -21,7 +21,7 @@ const CR0_ERROR_MASK: usize = 1 << 28;
 #[inline(always)]
 pub unsafe fn syscall0(mut n: usize) -> (usize, bool) {
     let ret: usize;
-    let mut is_err: usize;
+    let is_err: usize;
     llvm_asm!("sc"
          : "+{r0}"(n) "={cr0}"(is_err) "={r3}"(ret)
          :
@@ -32,7 +32,7 @@ pub unsafe fn syscall0(mut n: usize) -> (usize, bool) {
 
 #[inline(always)]
 pub unsafe fn syscall1(mut n: usize, mut a1: usize) -> (usize, bool) {
-    let mut is_err: usize;
+    let is_err: usize;
     llvm_asm!("sc"
          : "+{r0}"(n) "={cr0}"(is_err) "+{r3}"(a1)
          :
@@ -43,7 +43,7 @@ pub unsafe fn syscall1(mut n: usize, mut a1: usize) -> (usize, bool) {
 
 #[inline(always)]
 pub unsafe fn syscall2(mut n: usize, mut a1: usize, mut a2: usize) -> (usize, bool) {
-    let mut is_err: usize;
+    let is_err: usize;
     llvm_asm!("sc"
          : "+{r0}"(n) "={cr0}"(is_err) "+{r3}"(a1) "+{r4}"(a2)
          :
@@ -54,7 +54,7 @@ pub unsafe fn syscall2(mut n: usize, mut a1: usize, mut a2: usize) -> (usize, bo
 
 #[inline(always)]
 pub unsafe fn syscall3(mut n: usize, mut a1: usize, mut a2: usize, mut a3: usize) -> (usize, bool) {
-    let mut is_err: usize;
+    let is_err: usize;
     llvm_asm!("sc"
          : "+{r0}"(n) "={cr0}"(is_err) "+{r3}"(a1) "+{r4}"(a2) "+{r5}"(a3)
          :
@@ -71,7 +71,7 @@ pub unsafe fn syscall4(
     mut a3: usize,
     mut a4: usize,
 ) -> (usize, bool) {
-    let mut is_err: usize;
+    let is_err: usize;
     llvm_asm!("sc"
          : "+{r0}"(n) "={cr0}"(is_err) "+{r3}"(a1) "+{r4}"(a2) "+{r5}"(a3) "+{r6}"(a4)
          :
@@ -89,7 +89,7 @@ pub unsafe fn syscall5(
     mut a4: usize,
     mut a5: usize,
 ) -> (usize, bool) {
-    let mut is_err: usize;
+    let is_err: usize;
     llvm_asm!("sc"
          : "+{r0}"(n) "={cr0}"(is_err) "+{r3}"(a1) "+{r4}"(a2) "+{r5}"(a3) "+{r6}"(a4)
            "+{r7}"(a5)
@@ -109,7 +109,7 @@ pub unsafe fn syscall6(
     mut a5: usize,
     mut a6: usize,
 ) -> (usize, bool) {
-    let mut is_err: usize;
+    let is_err: usize;
     llvm_asm!("sc"
          : "+{r0}"(n) "={cr0}"(is_err) "+{r3}"(a1) "+{r4}"(a2) "+{r5}"(a3) "+{r6}"(a4)
            "+{r7}"(a5) "+{r8}"(a6)
