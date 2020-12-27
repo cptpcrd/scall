@@ -25,33 +25,13 @@ fn test_ebadf() {
             0
         );
 
-        #[cfg(all(
-            target_os = "linux",
-            not(any(
-                target_arch = "mips",
-                target_arch = "mips64",
-                target_arch = "powerpc",
-                target_arch = "powerpc64"
-            ))
-        ))]
+        #[cfg(scall_error = "packed")]
         assert_eq!(
             syscall_raw!(WRITE, -4isize, MESSAGE.as_ptr(), MESSAGE.len()),
             -libc::EBADF as usize
         );
 
-        #[cfg(any(
-            target_os = "freebsd",
-            target_os = "macos",
-            all(
-                target_os = "linux",
-                any(
-                    target_arch = "mips",
-                    target_arch = "mips64",
-                    target_arch = "powerpc",
-                    target_arch = "powerpc64"
-                )
-            )
-        ))]
+        #[cfg(scall_error = "flag")]
         assert_eq!(
             syscall_raw!(WRITE, -4isize, MESSAGE.as_ptr(), MESSAGE.len()),
             (libc::EBADF as usize, true)
@@ -76,29 +56,9 @@ fn test_kill() {
         assert_eq!(syscall!(KILL, 0, 0), Ok(0));
         assert_eq!(syscall!(KILL, std::process::id(), 0), Ok(0));
 
-        #[cfg(all(
-            target_os = "linux",
-            not(any(
-                target_arch = "mips",
-                target_arch = "mips64",
-                target_arch = "powerpc",
-                target_arch = "powerpc64"
-            ))
-        ))]
+        #[cfg(scall_error = "packed")]
         assert_eq!(syscall_raw!(KILL, 0, 0), 0);
-        #[cfg(any(
-            target_os = "freebsd",
-            target_os = "macos",
-            all(
-                target_os = "linux",
-                any(
-                    target_arch = "mips",
-                    target_arch = "mips64",
-                    target_arch = "powerpc",
-                    target_arch = "powerpc64"
-                )
-            )
-        ))]
+        #[cfg(scall_error = "flag")]
         assert_eq!(syscall_raw!(KILL, 0, 0), (0, false));
 
         assert_eq!(syscall_nofail!(KILL, 0, 0), 0);
@@ -113,33 +73,13 @@ fn test_getpid() {
 
     assert_eq!(unsafe { syscall_nofail!(GETPID) }, pid);
 
-    #[cfg(all(
-        target_os = "linux",
-        not(any(
-            target_arch = "mips",
-            target_arch = "mips64",
-            target_arch = "powerpc",
-            target_arch = "powerpc64"
-        ))
-    ))]
+    #[cfg(scall_error = "packed")]
     {
         assert_eq!(unsafe { scall::syscall0(scall::nr::GETPID) }, pid);
         assert_eq!(unsafe { syscall_raw!(GETPID) }, pid);
     }
 
-    #[cfg(any(
-        target_os = "freebsd",
-        target_os = "macos",
-        all(
-            target_os = "linux",
-            any(
-                target_arch = "mips",
-                target_arch = "mips64",
-                target_arch = "powerpc",
-                target_arch = "powerpc64"
-            )
-        )
-    ))]
+    #[cfg(scall_error = "flag")]
     {
         assert_eq!(unsafe { scall::syscall0(scall::nr::GETPID) }, (pid, false));
         assert_eq!(unsafe { syscall_raw!(GETPID) }, (pid, false));
