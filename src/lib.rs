@@ -80,7 +80,7 @@ mod macros;
     all(target_os = "macos", target_arch = "x86_64"),
     path = "platform/macos-x86_64/mod.rs"
 )]
-mod platform;
+pub mod platform;
 
 /// The type returned by [`syscall_raw!`] on this platform.
 ///
