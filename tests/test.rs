@@ -131,23 +131,28 @@ fn test_prctl() {
 #[cfg(target_os = "linux")]
 #[test]
 fn test_epoll() {
+    unsafe fn epoll_wait(
+        epfd: libc::c_int,
+        events: &mut [libc::epoll_event],
+        timeout: libc::c_int,
+    ) -> Result<usize, libc::c_int> {
+        syscall!(
+            EPOLL_PWAIT,
+            epfd,
+            events.as_mut_ptr(),
+            events.len(),
+            timeout,
+            std::ptr::null::<libc::sigset_t>(),
+            std::mem::size_of::<libc::sigset_t>(),
+        )
+    }
+
     unsafe {
-        let epfd = syscall!(EPOLL_CREATE1, libc::EPOLL_CLOEXEC).unwrap();
+        let epfd = syscall!(EPOLL_CREATE1, libc::EPOLL_CLOEXEC).unwrap() as libc::c_int;
 
         let mut events = [std::mem::zeroed::<libc::epoll_event>(); 2];
 
-        assert_eq!(
-            syscall!(
-                EPOLL_PWAIT,
-                epfd,
-                events.as_mut_ptr(),
-                events.len(),
-                0,
-                std::ptr::null::<libc::sigset_t>(),
-                std::mem::size_of::<libc::sigset_t>(),
-            ),
-            Ok(0)
-        );
+        assert_eq!(epoll_wait(epfd, &mut events, 0), Ok(0));
 
         // We have to call into libc to set up the pipe so it can handle the architecture
         // differences for us
@@ -167,33 +172,11 @@ fn test_epoll() {
         .unwrap();
 
         // No events yet
-        assert_eq!(
-            syscall!(
-                EPOLL_PWAIT,
-                epfd,
-                events.as_mut_ptr(),
-                events.len(),
-                0,
-                std::ptr::null::<libc::sigset_t>(),
-                std::mem::size_of::<libc::sigset_t>(),
-            ),
-            Ok(0)
-        );
+        assert_eq!(epoll_wait(epfd, &mut events, 0), Ok(0));
 
         // Now write() some data in, and it should poll as ready
         assert_eq!(syscall!(WRITE, pipefds[1], &b'0' as *const _, 1), Ok(1));
-        assert_eq!(
-            syscall!(
-                EPOLL_PWAIT,
-                epfd,
-                events.as_mut_ptr(),
-                events.len(),
-                0,
-                std::ptr::null::<libc::sigset_t>(),
-                std::mem::size_of::<libc::sigset_t>(),
-            ),
-            Ok(1)
-        );
+        assert_eq!(epoll_wait(epfd, &mut events, 0), Ok(1));
         assert_eq!(events[0].u64, pipefds[0] as u64);
         assert_eq!(events[0].events, libc::EPOLLIN as u32);
 
@@ -202,18 +185,7 @@ fn test_epoll() {
         syscall_nofail!(CLOSE, pipefds[1]);
 
         // Now no events
-        assert_eq!(
-            syscall!(
-                EPOLL_PWAIT,
-                epfd,
-                events.as_mut_ptr(),
-                events.len(),
-                0,
-                std::ptr::null::<libc::sigset_t>(),
-                std::mem::size_of::<libc::sigset_t>(),
-            ),
-            Ok(0)
-        );
+        assert_eq!(epoll_wait(epfd, &mut events, 0), Ok(0));
 
         syscall_nofail!(CLOSE, epfd);
     }
