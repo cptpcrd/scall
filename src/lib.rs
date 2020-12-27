@@ -103,7 +103,7 @@ pub type RawResult = (usize, bool);
 /// It can also be used to decode the results of the `syscallX()` functions, like [`syscall0()`].
 ///
 /// [`syscall_raw!`]: ./macro.syscall_raw.html
-/// [`syscall0()`]: ./fn.syscall0.html
+/// [`syscall0()`]: ./platform/fn.syscall0.html
 #[inline(always)]
 pub fn decode_raw_result(res: RawResult) -> Result<usize, i32> {
     #[cfg(scall_error = "packed")]
