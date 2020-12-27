@@ -29,9 +29,6 @@
 #![feature(llvm_asm)]
 #![no_std]
 
-#[cfg(test)]
-extern crate std;
-
 pub use platform::*;
 
 mod macros;
