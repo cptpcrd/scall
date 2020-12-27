@@ -12,11 +12,11 @@
 ///
 /// **Note**: You should use [`syscall!`] or [`syscall_nofail!`] in most cases!
 ///
-/// On Linux (on **most** architectors), this returns a `usize` representing the return value of
+/// On Linux (on **most** architectures), this returns a `usize` representing the return value of
 /// the syscall (if an error occurred, the error code is encoded into the result). On macOS and
 /// FreeBSD (and on some architectures on Linux), it returns a `(usize, bool)` tuple indicating 1)
 /// the return value and 2) whether an error occurred. ([`RawResult`] is an alias for this type,
-/// and it can be "decoded" with [`decode_raw_result()`].)
+/// and it can be "decoded" into a `Result<usize, i32>` with [`decode_raw_result()`].)
 ///
 /// Note: [`syscall!`] or [`syscall_nofail!`] should be preferred for most purposes. However, this
 /// macro may be useful if you need to make a series of syscalls quickly, *then* check the return
@@ -102,11 +102,16 @@ macro_rules! syscall_raw {
 /// this macro may see minor performance boosts over [`syscall!`].
 ///
 /// This macro will return the result of the syscall as a `usize`. It is assumed that either:
-/// 1. The syscall will never fail (like `sync()`, `sched_yield()`, or `getpid()`), or
+///
+/// 1. The syscall will never fail (like `sync()`, `sched_yield()`, or `getpid()`). In this case
+///    the result can be used safely.
 /// 2. The result will be ignored (like `close()` often is).
 ///
-/// In case 1 the value that this macro evaluates to can be used. In case 2, however, it should be
-/// completely ignored (if you need the result, use [`syscall!`].
+/// **Note**: If the syscall fails, the value returned by this function is **completely
+/// unspecified** and should be immediately discarded. On some platforms, it may even be a value
+/// that otherwise looks like an ordinary return value for this function. Do **NOT** use this macro
+/// to call syscalls like `open()` which can easily fail for a variety of reasons and whose
+/// results must be checked carefully.
 ///
 /// Example usage:
 /// ```
