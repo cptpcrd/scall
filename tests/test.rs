@@ -128,6 +128,97 @@ fn test_prctl() {
     }
 }
 
+#[cfg(target_os = "linux")]
+#[test]
+fn test_epoll() {
+    unsafe {
+        let epfd = syscall!(EPOLL_CREATE1, libc::EPOLL_CLOEXEC).unwrap();
+
+        let mut events = [std::mem::zeroed::<libc::epoll_event>(); 2];
+
+        assert_eq!(
+            syscall!(
+                EPOLL_PWAIT,
+                epfd,
+                events.as_mut_ptr(),
+                events.len(),
+                0,
+                std::ptr::null::<libc::sigset_t>(),
+                std::mem::size_of::<libc::sigset_t>(),
+            ),
+            Ok(0)
+        );
+
+        // We have to call into libc to set up the pipe so it can handle the architecture
+        // differences for us
+        let mut pipefds = [0i32; 2];
+        assert_eq!(libc::pipe2(pipefds.as_mut_ptr(), libc::O_CLOEXEC), 0);
+
+        // Watch for events on the read end of the pipe
+        events[0].u64 = pipefds[0] as u64;
+        events[0].events = libc::EPOLLIN as u32;
+        syscall!(
+            EPOLL_CTL,
+            epfd,
+            libc::EPOLL_CTL_ADD,
+            pipefds[0],
+            &mut events[0] as *mut _,
+        )
+        .unwrap();
+
+        // No events yet
+        assert_eq!(
+            syscall!(
+                EPOLL_PWAIT,
+                epfd,
+                events.as_mut_ptr(),
+                events.len(),
+                0,
+                std::ptr::null::<libc::sigset_t>(),
+                std::mem::size_of::<libc::sigset_t>(),
+            ),
+            Ok(0)
+        );
+
+        // Now write() some data in, and it should poll as ready
+        assert_eq!(syscall!(WRITE, pipefds[1], &b'0' as *const _, 1), Ok(1));
+        assert_eq!(
+            syscall!(
+                EPOLL_PWAIT,
+                epfd,
+                events.as_mut_ptr(),
+                events.len(),
+                0,
+                std::ptr::null::<libc::sigset_t>(),
+                std::mem::size_of::<libc::sigset_t>(),
+            ),
+            Ok(1)
+        );
+        assert_eq!(events[0].u64, pipefds[0] as u64);
+        assert_eq!(events[0].events, libc::EPOLLIN as u32);
+
+        // Close both ends of the pipe
+        syscall_nofail!(CLOSE, pipefds[0]);
+        syscall_nofail!(CLOSE, pipefds[1]);
+
+        // Now no events
+        assert_eq!(
+            syscall!(
+                EPOLL_PWAIT,
+                epfd,
+                events.as_mut_ptr(),
+                events.len(),
+                0,
+                std::ptr::null::<libc::sigset_t>(),
+                std::mem::size_of::<libc::sigset_t>(),
+            ),
+            Ok(0)
+        );
+
+        syscall_nofail!(CLOSE, epfd);
+    }
+}
+
 #[cfg(target_os = "freebsd")]
 #[test]
 fn test_procctl() {
