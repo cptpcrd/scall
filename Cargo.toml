@@ -3,12 +3,12 @@ name = "scall"
 version = "0.1.0"
 edition = "2018"
 
-description = "Friendlier raw system calls"
+description = "Friendlier raw system calls for Rust."
 readme = "README.md"
 authors = ["The syscall.rs Project Developers", "cptpcrd"]
 keywords = ["syscall", "system", "call"]
 
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 repository = "https://github.com/cptpcrd/scall"
 
 [dev-dependencies]
