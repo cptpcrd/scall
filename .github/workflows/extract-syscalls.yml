@@ -2,7 +2,7 @@ name: Extract syscalls
 
 on:
   push:
-    branches: [master, test-ci]
+    branches: [test-ci]
   schedule:
     - cron: '0 0 * * 0'
 
