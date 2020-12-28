@@ -191,6 +191,74 @@ fn test_epoll() {
     }
 }
 
+#[cfg(any(target_os = "freebsd", target_os = "macos"))]
+#[test]
+fn test_kqueue() {
+    unsafe fn kevent(
+        kq: libc::c_int,
+        changes: &[libc::kevent],
+        events: &mut [libc::kevent],
+        timeout: Option<libc::timespec>,
+    ) -> Result<usize, libc::c_int> {
+        let raw_timeout = if let Some(ref timeout) = timeout {
+            timeout
+        } else {
+            std::ptr::null()
+        };
+
+        syscall!(
+            KEVENT,
+            kq,
+            changes.as_ptr(),
+            changes.len(),
+            events.as_mut_ptr(),
+            events.len(),
+            raw_timeout,
+        )
+    }
+
+    unsafe {
+        let timeout_0 = libc::timespec {
+            tv_sec: 0,
+            tv_nsec: 0,
+        };
+
+        let kq = syscall!(KQUEUE).unwrap() as libc::c_int;
+
+        let mut events = [std::mem::zeroed::<libc::kevent>(); 2];
+
+        assert_eq!(kevent(kq, &[], &mut events, Some(timeout_0)), Ok(0));
+
+        let mut pipefds = [0i32; 2];
+        assert_eq!(libc::pipe(pipefds.as_mut_ptr()), 0);
+
+        // Watch for events on the read end of the pipe
+        events[0] = std::mem::zeroed();
+        events[0].ident = pipefds[0] as _;
+        events[0].filter = libc::EVFILT_READ as _;
+        events[0].flags = libc::EV_ADD as _;
+        assert_eq!(kevent(kq, &events[..1], &mut [], None), Ok(0));
+
+        // No events yet
+        assert_eq!(kevent(kq, &[], &mut events, Some(timeout_0)), Ok(0));
+
+        // Now write() some data in, and it should poll as ready
+        assert_eq!(syscall!(WRITE, pipefds[1], &b'0' as *const _, 1), Ok(1));
+        assert_eq!(kevent(kq, &[], &mut events, Some(timeout_0)), Ok(1));
+        assert_eq!(events[0].ident, pipefds[0] as _);
+        assert_eq!(events[0].filter, libc::EVFILT_READ as _);
+
+        // Close both ends of the pipe
+        syscall_nofail!(CLOSE, pipefds[0]);
+        syscall_nofail!(CLOSE, pipefds[1]);
+
+        // Now no events
+        assert_eq!(kevent(kq, &[], &mut events, Some(timeout_0)), Ok(0));
+
+        syscall_nofail!(CLOSE, kq);
+    }
+}
+
 #[cfg(target_os = "freebsd")]
 #[test]
 fn test_procctl() {
