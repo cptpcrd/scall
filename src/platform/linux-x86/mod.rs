@@ -126,25 +126,24 @@ pub unsafe fn syscall6(
     //
     // As workaround only use a single input operand with known memory layout
     // and manually save restore ebp.
-    let args = [n, a1, a2, a3, a4, a5, a6];
+    //
+    // UPDATED: Only store the last 2 arguments in the array input; everything else is passed in
+    // registers for efficiency (and to let the compiler optimize if it can).
+
+    let final_args = [a5, a6];
 
     asm!(
         "push ebp",
-        "mov ebp, [eax + 24]",
-        "mov edi, [eax + 20]",
-        "mov esi, [eax + 16]",
-        "mov edx, [eax + 12]",
-        "mov ecx, [eax + 8]",
-        "mov ebx, [eax + 4]",
-        "mov eax, [eax + 0]",
+        "mov ebp, [edi + 4]",
+        "mov edi, [edi + 0]",
         "int $$0x80",
         "pop ebp",
-        inout("eax") args.as_ptr() => ret,
-        out("ebx") _,
-        out("ecx") _,
-        out("edx") _,
-        out("esi") _,
-        out("edi") _,
+        inout("eax") n => ret,
+        in("ebx") a1,
+        in("ecx") a2,
+        in("edx") a3,
+        in("esi") a4,
+        inout("edi") final_args.as_ptr() => _,
     );
     ret
 }
