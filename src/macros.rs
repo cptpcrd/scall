@@ -192,7 +192,7 @@ macro_rules! syscall_nofail {
     };
 
     ($nr:ident, $($args:expr,)*) => {
-        $crate::syscall_raw!($nr$(, $args)*)
+        $crate::syscall_nofail!($nr$(, $args)*)
     };
 }
 
