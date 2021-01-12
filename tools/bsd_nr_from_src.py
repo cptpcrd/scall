@@ -102,6 +102,9 @@ def main(args: List[str]) -> None:
                 "SYSCTL": "__SYSCTL",
             }.get(name, name)
 
+            if name.startswith("SYS_"):
+                name = name[4:]
+
         syscalls.append((name, nr))
 
     for arch in arches:
