@@ -88,14 +88,17 @@ def main(args: List[str]) -> None:
 
             if "COMPAT" in sc_types:
                 continue
-            if "COMPAT4" in sc_types:
-                name = "FREEBSD4_" + name
-            if "COMPAT6" in sc_types:
-                name = "FREEBSD6_" + name
-            if "COMPAT7" in sc_types:
-                name = "FREEBSD7_" + name
-            if "COMPAT11" in sc_types:
-                name = "FREEBSD11_" + name
+
+            for sc_type, prefix in [
+                ("COMPAT4", "FREEBSD4_"),
+                ("COMPAT6", "FREEBSD6_"),
+                ("COMPAT7", "FREEBSD7_"),
+                ("COMPAT10", "FREEBSD10_"),
+                ("COMPAT11", "FREEBSD11_"),
+            ]:
+                if sc_type in sc_types:
+                    name = prefix + name
+                    break
 
         elif os_name == "macos":
             name = {
