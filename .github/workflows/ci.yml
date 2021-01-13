@@ -50,18 +50,26 @@ jobs:
           command: build
           args: --verbose --target ${{ matrix.target }}
 
-      - name: Run tests
+      - name: Build (release mode)
+        uses: actions-rs/cargo@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          command: build
+          args: --verbose --target ${{ matrix.target }} --release
+
+      - name: Test
         uses: actions-rs/cargo@v1
         with:
           toolchain: ${{ matrix.toolchain }}
           command: test
           args: --verbose --target ${{ matrix.target }}
-        # Only try to run the tests if the OS/architecture we're building for
-        # matches the host machine.
-        if: >-
-          matrix.os == 'ubuntu-latest' && (startsWith(matrix.target, 'x86_64-unknown-linux-')
-              || startsWith(matrix.target, 'i686-unknown-linux-'))
-          || matrix.os == 'macos-latest' && startsWith(matrix.target, 'x86_64-apple-darwin')
+
+      - name: Test (release mode)
+        uses: actions-rs/cargo@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          command: test
+          args: --verbose --target ${{ matrix.target }} --release
 
   cross-build:
     name: Build
@@ -102,16 +110,36 @@ jobs:
           use-tool-cache: true
 
       - name: Build
-        run: cross build --verbose --target ${{ matrix.target }}
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          toolchain: ${{ matrix.toolchain }}
+          command: build
+          args: --verbose --target ${{ matrix.target }}
 
       - name: Build (release mode)
-        run: cross build --verbose --target ${{ matrix.target }} --release
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          toolchain: ${{ matrix.toolchain }}
+          command: build
+          args: --verbose --target ${{ matrix.target }} --release
 
       - name: Test
-        run: cross test --verbose --target ${{ matrix.target }}
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          toolchain: ${{ matrix.toolchain }}
+          command: test
+          args: --verbose --target ${{ matrix.target }}
 
       - name: Test (release mode)
-        run: cross test --verbose --target ${{ matrix.target }} --release
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          toolchain: ${{ matrix.toolchain }}
+          command: test
+          args: --verbose --target ${{ matrix.target }} --release
 
   coverage-tarpaulin:
     name: Tarpaulin
