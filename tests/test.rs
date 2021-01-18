@@ -124,7 +124,7 @@ fn test_prctl() {
         assert_eq!(syscall!(PRCTL, libc::PR_GET_KEEPCAPS, 0, 0, 0, 0), Ok(1));
         assert_eq!(syscall_nofail!(PRCTL, libc::PR_GET_KEEPCAPS, 0, 0, 0, 0), 1);
 
-        syscall!(PRCTL, libc::PR_GET_KEEPCAPS, old_keepcaps, 0, 0, 0).unwrap();
+        syscall!(PRCTL, libc::PR_SET_KEEPCAPS, old_keepcaps, 0, 0, 0).unwrap();
     }
 }
 
