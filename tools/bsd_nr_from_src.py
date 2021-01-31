@@ -6,8 +6,8 @@ import sys
 from typing import List
 
 ITEM_RE = re.compile(
-    r"\s*(?P<nr_range>\d+(-\d+)?)\s+(?P<aue>AUE_[A-Z0-9a-z_]+)\s+(?P<type>[A-Z0-9]+(\s*\|\s*[A-Z0-9]+)*)\s*"
-    r"(\{\s*\w+(\s+|\s*(\*)?\s*)(?P<name>\w+)\s*\([^{}]*?\)(\s*NO_SYSCALL_STUB)?\s*;\s*\}(\s*\{[^}]+\}|([ \t]+(?P<altname>\w+)([ \t+]\w+){0,2})?)?|[^{\n]*)\s+"
+    r"[ \t]*(?P<nr_range>\d+(-\d+)?)[ \t]+(?P<aue>AUE_[A-Z0-9a-z_]+)[ \t]+(?P<type>[A-Z0-9]+([ \t]*\|[ \t]*[A-Z0-9]+)*)[ \t]*"
+    r"(\{\s*\w+(\s+|\s*(\*)?\s*)(?P<name>\w+)\s*\([^{}]*?\)(\s*NO_SYSCALL_STUB)?\s*;\s*\}(\s*\{[^}]+\}|([ \t]+(?P<altname>\w+)([ \t+]\w+){0,2})?)?|[^{\n]*)?\s+"
 )
 
 NICE_OS_NAMES = {
@@ -58,6 +58,9 @@ def main(args: List[str]) -> None:
         sc_types = [name.strip() for name in match.group("type").split("|")]
         name = (match.group("name") or "").upper()
         altname = (match.group("altname") or "").upper()
+
+        if sc_types == ["RESERVED"]:
+            continue
 
         if "-" in nr_range:
             assert not name
