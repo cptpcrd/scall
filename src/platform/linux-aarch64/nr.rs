@@ -272,7 +272,6 @@ pub const SYMLINKAT: usize = 36;
 pub const SYNC: usize = 81;
 pub const SYNC_FILE_RANGE: usize = 84;
 pub const SYNCFS: usize = 267;
-pub const SYSCALLS: usize = 442;
 pub const SYSINFO: usize = 179;
 pub const SYSLOG: usize = 116;
 pub const TEE: usize = 77;

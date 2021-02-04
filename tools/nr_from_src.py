@@ -126,6 +126,10 @@ def main(args: List[str]) -> None:
         )
     )
 
+    for prefix, name in list(names):
+        if name == "syscalls":
+            names.discard((prefix, name))
+
     if len(names) < 380:
         print(
             "Didn't find anywhere near enough syscalls; hack must have failed",
