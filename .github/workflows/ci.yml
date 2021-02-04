@@ -88,6 +88,7 @@ jobs:
           - powerpc-unknown-linux-gnu
           # - powerpc64-unknown-linux-gnu
           - powerpc64le-unknown-linux-gnu
+          - riscv64gc-unknown-linux-gnu
 
     runs-on: ubuntu-latest
 

@@ -19,6 +19,7 @@ NICE_ARCH_NAMES = {
     "mips64": "MIPS64",
     "sparc64": "SPARC64",
     "armeabi": "arm",
+    "riscv64": "RISCV-64",
 }
 
 
@@ -163,6 +164,7 @@ def main(args: List[str]) -> None:
             )
         ),
         "sparc64": dict(load_headers(linux_path, names, "sparc")),
+        "riscv64": dict(load_headers(linux_path, names, "riscv", "")),
         "x86": dict(
             load_table(linux_path, "arch/x86/entry/syscalls/syscall_32.tbl", {"i386"})
         ),

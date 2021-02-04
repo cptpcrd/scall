@@ -63,6 +63,10 @@ mod macros;
     path = "platform/linux-sparc64/mod.rs"
 )]
 #[cfg_attr(
+    all(target_os = "linux", target_arch = "riscv64"),
+    path = "platform/linux-riscv64/mod.rs"
+)]
+#[cfg_attr(
     all(target_os = "linux", target_arch = "x86"),
     path = "platform/linux-x86/mod.rs"
 )]
