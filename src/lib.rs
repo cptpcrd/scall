@@ -28,6 +28,7 @@
 #![allow(clippy::missing_safety_doc)]
 #![feature(llvm_asm)]
 #![feature(asm)]
+#![feature(doc_cfg)]
 #![no_std]
 
 pub use platform::*;

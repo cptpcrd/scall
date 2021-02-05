@@ -110,6 +110,51 @@ fn test_faccessat() {
 
 #[cfg(target_os = "linux")]
 #[test]
+fn test_pread64() {
+    use std::io::prelude::*;
+    use std::os::unix::prelude::*;
+
+    unsafe fn pread64(
+        fd: libc::c_int,
+        buf: &mut [u8],
+        offset: libc::off_t,
+    ) -> Result<usize, libc::c_int> {
+        scall::syscall_args64!(PREAD64, fd, buf.as_mut_ptr(), buf.len(), @u64 offset)
+    }
+
+    unsafe {
+        let mut file = std::fs::File::open(std::env::current_exe().unwrap()).unwrap();
+
+        let mut buf1 = [0; 1024];
+        let mut buf2 = [0; 1024];
+
+        file.read_exact(&mut buf1).unwrap();
+        let n = pread64(file.as_raw_fd(), &mut buf2, 0).unwrap();
+        assert!(n > 0);
+        assert!(buf1.starts_with(&buf2[..n]));
+
+        file.read_exact(&mut buf1).unwrap();
+        let n = pread64(file.as_raw_fd(), &mut buf2, 1024).unwrap();
+        assert!(n > 0);
+        assert!(buf1.starts_with(&buf2[..n]));
+    }
+}
+
+#[cfg(target_os = "linux")]
+#[test]
+fn test_readahead() {
+    use std::os::unix::prelude::*;
+
+    unsafe {
+        let file = std::fs::File::open(std::env::current_exe().unwrap()).unwrap();
+
+        scall::syscall_args64!(READAHEAD, file.as_raw_fd(), @u64 1024, 1024).unwrap();
+        scall::syscall_args64!(READAHEAD, file.as_raw_fd(), @u64 1024, 1024,).unwrap();
+    }
+}
+
+#[cfg(target_os = "linux")]
+#[test]
 fn test_prctl() {
     unsafe {
         let old_keepcaps = syscall!(PRCTL, libc::PR_GET_KEEPCAPS, 0, 0, 0, 0).unwrap();
