@@ -155,6 +155,96 @@ fn test_readahead() {
 
 #[cfg(target_os = "linux")]
 #[test]
+fn test_sync_file_range() {
+    use std::os::unix::prelude::*;
+
+    unsafe {
+        let file = std::fs::File::open("/").unwrap();
+
+        #[cfg(not(any(
+            target_arch = "powerpc",
+            target_arch = "powerpc64",
+            target_arch = "arm"
+        )))]
+        {
+            scall::syscall_args64!(
+                SYNC_FILE_RANGE,
+                file.as_raw_fd(),
+                @u64 1024,
+                @u64 1024,
+                libc::SYNC_FILE_RANGE_WRITE,
+            )
+            .unwrap();
+
+            assert_eq!(
+                scall::syscall_args64!(
+                    SYNC_FILE_RANGE,
+                    file.as_raw_fd(),
+                    @u64 -1i64,
+                    @u64 1024,
+                    libc::SYNC_FILE_RANGE_WRITE,
+                )
+                .unwrap_err(),
+                libc::EINVAL,
+            );
+
+            assert_eq!(
+                scall::syscall_args64!(
+                    SYNC_FILE_RANGE,
+                    file.as_raw_fd(),
+                    @u64 1024,
+                    @u64 -1i64,
+                    libc::SYNC_FILE_RANGE_WRITE,
+                )
+                .unwrap_err(),
+                libc::EINVAL,
+            );
+        }
+
+        #[cfg(any(
+            target_arch = "powerpc",
+            target_arch = "powerpc64",
+            target_arch = "arm"
+        ))]
+        {
+            scall::syscall_args64!(
+                SYNC_FILE_RANGE2,
+                file.as_raw_fd(),
+                libc::SYNC_FILE_RANGE_WRITE,
+                @u64 1024,
+                @u64 1024,
+            )
+            .unwrap();
+
+            assert_eq!(
+                scall::syscall_args64!(
+                    SYNC_FILE_RANGE2,
+                    file.as_raw_fd(),
+                    libc::SYNC_FILE_RANGE_WRITE,
+                    @u64 -1i64,
+                    @u64 1024,
+                )
+                .unwrap_err(),
+                libc::EINVAL,
+            );
+
+            assert_eq!(
+                scall::syscall_args64!(
+                    SYNC_FILE_RANGE2,
+                    file.as_raw_fd(),
+                    libc::SYNC_FILE_RANGE_WRITE,
+                    @u64 1024,
+                    @u64 -1i64,
+                )
+                .unwrap_err(),
+                libc::EINVAL,
+            );
+        }
+    }
+}
+
+#[cfg(target_os = "linux")]
+#[test]
 fn test_prctl() {
     unsafe {
         let old_keepcaps = syscall!(PRCTL, libc::PR_GET_KEEPCAPS, 0, 0, 0, 0).unwrap();
