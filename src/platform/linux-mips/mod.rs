@@ -216,6 +216,50 @@ pub unsafe fn syscall6(
 }
 
 #[inline(always)]
+pub unsafe fn syscall7(
+    nr: usize,
+    a1: usize,
+    a2: usize,
+    a3: usize,
+    a4: usize,
+    a5: usize,
+    a6: usize,
+    a7: usize,
+) -> (usize, bool) {
+    let ret: usize;
+    let is_err: usize;
+    asm!(
+        ".set noat",
+        "subu $29, 28",
+        "sw {}, 16($29)",
+        "sw {}, 20($29)",
+        "sw {}, 24($29)",
+        "syscall",
+        "addiu $29, 28",
+        ".set at",
+        in(reg) a5,
+        in(reg) a6,
+        in(reg) a7,
+        inout("$2") nr => ret,
+        in("$4") a1,
+        in("$5") a2,
+        in("$6") a3,
+        inout("$7") a4 => is_err,
+        out("$8") _,
+        out("$9") _,
+        out("$10") _,
+        out("$11") _,
+        out("$12") _,
+        out("$13") _,
+        out("$14") _,
+        out("$15") _,
+        out("$24") _,
+        out("$25") _,
+    );
+    (ret, is_err != 0)
+}
+
+#[inline(always)]
 pub unsafe fn syscall0_nofail(nr: usize) -> usize {
     let ret: usize;
     asm!(
@@ -387,6 +431,49 @@ pub unsafe fn syscall6_nofail(
         ".set at",
         in(reg) a5,
         in(reg) a6,
+        inout("$2") nr => ret,
+        in("$4") a1,
+        in("$5") a2,
+        in("$6") a3,
+        inout("$7") a4 => _,
+        out("$8") _,
+        out("$9") _,
+        out("$10") _,
+        out("$11") _,
+        out("$12") _,
+        out("$13") _,
+        out("$14") _,
+        out("$15") _,
+        out("$24") _,
+        out("$25") _,
+    );
+    ret
+}
+
+#[inline(always)]
+pub unsafe fn syscall7_nofail(
+    nr: usize,
+    a1: usize,
+    a2: usize,
+    a3: usize,
+    a4: usize,
+    a5: usize,
+    a6: usize,
+    a7: usize,
+) -> usize {
+    let ret: usize;
+    asm!(
+        ".set noat",
+        "subu $29, 28",
+        "sw {}, 16($29)",
+        "sw {}, 20($29)",
+        "sw {}, 24($29)",
+        "syscall",
+        "addiu $29, 28",
+        ".set at",
+        in(reg) a5,
+        in(reg) a6,
+        in(reg) a7,
         inout("$2") nr => ret,
         in("$4") a1,
         in("$5") a2,
