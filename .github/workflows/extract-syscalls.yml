@@ -40,7 +40,7 @@ jobs:
         run: |
           set -e
           wget https://github.com/freebsd/freebsd-src/raw/main/sys/kern/syscalls.master -O ${{ runner.temp }}/freebsd-syscalls.master
-          wget https://github.com/apple/darwin-xnu/raw/master/bsd/kern/syscalls.master -O ${{ runner.temp }}/macos-syscalls.master
+          wget https://github.com/apple/darwin-xnu/raw/main/bsd/kern/syscalls.master -O ${{ runner.temp }}/macos-syscalls.master
 
       - name: Build new syscall number files
         run: |
