@@ -302,8 +302,14 @@ macro_rules! _scall_internal_syscall_args64 {
     };
 }
 
-// x86 requires that 64-bit values be split, but not necessarily aligned
-#[cfg(all(target_os = "linux", target_arch = "x86"))]
+// Some 32-bit architectures require that 64-bit values be split, but not necessarily aligned
+// This is the *little-endian* version
+#[cfg(all(
+    target_os = "linux",
+    target_pointer_width = "32",
+    not(any(target_arch = "arm", target_arch = "mips", target_arch = "powerpc")),
+    target_endian = "little",
+))]
 #[doc(hidden)]
 #[macro_export]
 macro_rules! _scall_internal_syscall_args64 {
@@ -314,12 +320,30 @@ macro_rules! _scall_internal_syscall_args64 {
     };
 }
 
+// Some 32-bit architectures require that 64-bit values be split, but not necessarily aligned
+// This is the *big-endian* version
+#[cfg(all(
+    target_os = "linux",
+    target_pointer_width = "32",
+    not(any(target_arch = "arm", target_arch = "mips", target_arch = "powerpc")),
+    target_endian = "big",
+))]
+#[doc(hidden)]
+#[macro_export]
+macro_rules! _scall_internal_syscall_args64 {
+    ($nr:ident, $($sarg1:expr,)* $(@u64 $larg2:expr,)+ $($sarg3:expr,)*) => {
+        $crate::syscall!(
+            $nr, $($sarg1,)* $($larg2 as u64 >> 32, $larg2 as u32,)+ $($sarg3,)*
+        )
+    };
+}
+
 // ARM/MIPS/PowerPC require that values be aligned to an even register pair
 // This is the *little-endian* version
 #[cfg(all(
     target_os = "linux",
     target_pointer_width = "32",
-    not(target_arch = "x86"),
+    any(target_arch = "arm", target_arch = "mips", target_arch = "powerpc"),
     target_endian = "little",
 ))]
 #[doc(hidden)]
@@ -343,7 +367,7 @@ macro_rules! _scall_internal_syscall_args64 {
 #[cfg(all(
     target_os = "linux",
     target_pointer_width = "32",
-    not(target_arch = "x86"),
+    any(target_arch = "arm", target_arch = "mips", target_arch = "powerpc"),
     target_endian = "big",
 ))]
 #[doc(hidden)]
