@@ -35,6 +35,9 @@ pub use platform::*;
 
 mod macros;
 
+#[cfg(target_os = "linux")]
+mod args64;
+
 #[cfg_attr(
     all(target_os = "linux", target_arch = "aarch64"),
     path = "platform/linux-aarch64/mod.rs"
