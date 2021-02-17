@@ -18,6 +18,7 @@ pub unsafe fn syscall0(n: usize) -> usize {
         "swi #0",
         in("r7") n,
         out("r0") ret,
+        out("lr") _,
     );
     ret
 }
@@ -29,6 +30,7 @@ pub unsafe fn syscall1(n: usize, a1: usize) -> usize {
         "swi #0",
         in("r7") n,
         inout("r0") a1 => ret,
+        out("lr") _,
     );
     ret
 }
@@ -41,6 +43,7 @@ pub unsafe fn syscall2(n: usize, a1: usize, a2: usize) -> usize {
         in("r7") n,
         inout("r0") a1 => ret,
         in("r1") a2,
+        out("lr") _,
     );
     ret
 }
@@ -54,6 +57,7 @@ pub unsafe fn syscall3(n: usize, a1: usize, a2: usize, a3: usize) -> usize {
         inout("r0") a1 => ret,
         in("r1") a2,
         in("r2") a3,
+        out("lr") _,
     );
     ret
 }
@@ -68,6 +72,7 @@ pub unsafe fn syscall4(n: usize, a1: usize, a2: usize, a3: usize, a4: usize) -> 
         in("r1") a2,
         in("r2") a3,
         in("r3") a4,
+        out("lr") _,
     );
     ret
 }
@@ -83,6 +88,7 @@ pub unsafe fn syscall5(n: usize, a1: usize, a2: usize, a3: usize, a4: usize, a5:
         in("r2") a3,
         in("r3") a4,
         in("r4") a5,
+        out("lr") _,
     );
     ret
 }
@@ -107,6 +113,7 @@ pub unsafe fn syscall6(
         in("r3") a4,
         in("r4") a5,
         in("r5") a6,
+        out("lr") _,
     );
     ret
 }
@@ -136,6 +143,7 @@ pub unsafe fn syscall7(
         in("r4") a5,
         in("r5") a6,
         in("r8") a7,
+        out("lr") _,
     );
     ret
 }
