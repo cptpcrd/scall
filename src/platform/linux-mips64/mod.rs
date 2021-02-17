@@ -11,6 +11,7 @@
 
 // For more information see src/platform/linux-mips/mod.rs
 
+pub mod eno;
 pub mod nr;
 
 #[inline(always)]

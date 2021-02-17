@@ -9,6 +9,7 @@
 
 //! This library was built for x86-64 MacOS.
 
+pub mod eno;
 pub mod nr;
 
 const MACOS_SYSCALL_PREFIX: usize = 33554432;

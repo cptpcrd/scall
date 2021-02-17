@@ -1,4 +1,4 @@
-name: Extract syscalls
+name: Extract syscalls/error numbers
 
 on:
   push:
@@ -36,19 +36,24 @@ jobs:
             make ARCH="${arch}" archheaders
           done
 
-      - name: Download FreeBSD/macOS syscalls.master
+      - name: Download FreeBSD/macOS syscalls.master and errno.h
         run: |
           set -e
           wget https://github.com/freebsd/freebsd-src/raw/main/sys/kern/syscalls.master -O ${{ runner.temp }}/freebsd-syscalls.master
+          wget https://github.com/freebsd/freebsd-src/raw/main/sys/sys/errno.h -O ${{ runner.temp }}/freebsd-errno.h
           wget https://github.com/apple/darwin-xnu/raw/main/bsd/kern/syscalls.master -O ${{ runner.temp }}/macos-syscalls.master
+          wget https://github.com/apple/darwin-xnu/raw/main/bsd/sys/errno.h -O ${{ runner.temp }}/macos-errno.h
 
-      - name: Build new syscall number files
+      - name: Build new syscall/error number files
         run: |
           set -e
           cd tools
           python3 nr_from_src.py ${{ runner.temp }}/linux
+          python3 eno_from_src.py ${{ runner.temp }}/linux
           python3 bsd_nr_from_src.py ${{ runner.temp }}/freebsd-syscalls.master freebsd
+          python3 bsd_eno_from_src.py ${{ runner.temp }}/freebsd-errno.h freebsd
           python3 bsd_nr_from_src.py ${{ runner.temp }}/macos-syscalls.master macos
+          python3 bsd_eno_from_src.py ${{ runner.temp }}/macos-errno.h macos
 
       - name: Check for changes
         run: |

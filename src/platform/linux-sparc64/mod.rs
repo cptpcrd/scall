@@ -12,6 +12,7 @@
 // Reference:
 // http://math-atlas.sourceforge.net/devel/assembly/abi_sysV_sparc.pdf
 
+pub mod eno;
 pub mod nr;
 
 #[inline(always)]

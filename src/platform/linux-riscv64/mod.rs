@@ -11,6 +11,7 @@
 
 // https://github.com/riscv/riscv-elf-psabi-doc/blob/master/riscv-elf.md#-integer-calling-convention
 
+pub mod eno;
 pub mod nr;
 
 #[inline(always)]

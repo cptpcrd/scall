@@ -15,6 +15,7 @@
 // Role of registers
 // See: https://www.linux-mips.org/wiki/Syscall
 
+pub mod eno;
 pub mod nr;
 
 #[inline(always)]

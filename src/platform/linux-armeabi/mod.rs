@@ -9,6 +9,7 @@
 
 //! This library was built for arm Linux.
 
+pub mod eno;
 pub mod nr;
 
 #[inline(always)]

@@ -7,7 +7,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use scall::{syscall, syscall_nofail, syscall_raw};
+use scall::{eno, syscall, syscall_nofail, syscall_raw};
 
 #[test]
 fn test_ebadf() {
@@ -16,7 +16,7 @@ fn test_ebadf() {
     unsafe {
         assert_eq!(
             syscall!(WRITE, -4isize, MESSAGE.as_ptr(), MESSAGE.len()),
-            Err(libc::EBADF)
+            Err(eno::EBADF)
         );
 
         // Note: This is `assert_ne`, NOT `assert_eq`.
@@ -28,13 +28,13 @@ fn test_ebadf() {
         #[cfg(scall_error = "packed")]
         assert_eq!(
             syscall_raw!(WRITE, -4isize, MESSAGE.as_ptr(), MESSAGE.len()),
-            -libc::EBADF as usize
+            -eno::EBADF as usize
         );
 
         #[cfg(scall_error = "flag")]
         assert_eq!(
             syscall_raw!(WRITE, -4isize, MESSAGE.as_ptr(), MESSAGE.len()),
-            (libc::EBADF as usize, true)
+            (eno::EBADF as usize, true)
         );
     }
 }
@@ -103,7 +103,7 @@ fn test_faccessat() {
         {
             let res = syscall!(FACCESSAT2, libc::AT_FDCWD, b"/\0".as_ptr(), libc::F_OK, 0);
 
-            assert!(res == Ok(0) || res == Err(libc::ENOSYS), "{:?}", res);
+            assert!(res == Ok(0) || res == Err(eno::ENOSYS), "{:?}", res);
         }
     }
 }
@@ -185,7 +185,7 @@ fn test_sync_file_range() {
                     libc::SYNC_FILE_RANGE_WRITE,
                 )
                 .unwrap_err(),
-                libc::EINVAL,
+                eno::EINVAL,
             );
 
             assert_eq!(
@@ -197,7 +197,7 @@ fn test_sync_file_range() {
                     libc::SYNC_FILE_RANGE_WRITE,
                 )
                 .unwrap_err(),
-                libc::EINVAL,
+                eno::EINVAL,
             );
         }
 
@@ -225,7 +225,7 @@ fn test_sync_file_range() {
                     @u64 1024,
                 )
                 .unwrap_err(),
-                libc::EINVAL,
+                eno::EINVAL,
             );
 
             assert_eq!(
@@ -237,7 +237,7 @@ fn test_sync_file_range() {
                     @u64 -1i64,
                 )
                 .unwrap_err(),
-                libc::EINVAL,
+                eno::EINVAL,
             );
         }
     }
@@ -411,7 +411,7 @@ fn test_procctl() {
         );
         assert_eq!(
             syscall!(PROCCTL, libc::P_PID, pid, PROC_REAP_ACQUIRE, 0),
-            Err(libc::EBUSY)
+            Err(eno::EBUSY)
         );
 
         assert_eq!(
@@ -420,7 +420,7 @@ fn test_procctl() {
         );
         assert_eq!(
             syscall!(PROCCTL, libc::P_PID, pid, PROC_REAP_RELEASE, 0),
-            Err(libc::EINVAL)
+            Err(eno::EINVAL)
         );
     }
 }

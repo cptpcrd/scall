@@ -17,6 +17,7 @@
 #![allow(unused_assignments)]
 #![allow(unused_variables)]
 
+pub mod eno;
 pub mod nr;
 
 const CR0_ERROR_MASK: usize = 1 << 28;
