@@ -62,25 +62,17 @@ def read_errno_header_file(
 
 
 def read_arch_errnos(
-    linux_path: str, arch: str, base: Dict[str, int], extra_paths: List[str]
+    linux_path: str,
+    arch: str,
+    base: Dict[str, int],
+    header_path: Optional[str] = None,
 ) -> Dict[str, int]:
-    if arch is None:
-        return read_errno_header_file(
-            os.path.join(linux_path, "include/uapi/asm-generic/errno.h"), base
+    if header_path is None:
+        header_path = (
+            os.path.join(linux_path, "arch", arch, "include/uapi/asm/errno.h")
+            if arch is not None
+            else os.path.join(linux_path, "include/uapi/asm-generic/errno.h")
         )
-
-    possible_paths = [
-        *extra_paths,
-        os.path.join(linux_path, "arch", arch, "include/asm/errno.h"),
-        os.path.join(linux_path, "arch", arch, "include/uapi/asm/errno.h"),
-    ]
-
-    for path in possible_paths:
-        if os.path.exists(path):
-            header_path = path
-            break
-    else:
-        raise RuntimeError("Unable to find errno.h")
 
     return read_errno_header_file(header_path, base)
 
@@ -113,20 +105,23 @@ def main(args: List[str]) -> None:
         "x86_64": None,
     }
 
-    karch_extra_paths = {
-        "mips": [os.path.join(linux_path, "tools/arch/mips/include/uapi/asm/errno.h")],
+    karch_header_paths = {
+        "mips": os.path.join(linux_path, "tools/arch/mips/include/uapi/asm/errno.h"),
     }
 
-    karch_errnos = {
-        karch: read_arch_errnos(
-            linux_path, karch, errno_base, karch_extra_paths.get(karch, [])
+    karch_errnos = {None: read_arch_errnos(linux_path, None, errno_base, None)}
+
+    # Read the powerpc-specific errno.h, but "base" it off of the "generic" header
+    # (include/uapi/asm-generic/errno.h)
+    karch_bases = {"powerpc": karch_errnos[None]}
+
+    for karch in set(kernel_arches.values()) - {None}:
+        karch_errnos[karch] = read_arch_errnos(
+            linux_path,
+            karch,
+            karch_bases.get(karch, errno_base),
+            karch_header_paths.get(karch, None),
         )
-        for karch in set(kernel_arches.values()) - {"powerpc"}
-    }
-
-    karch_errnos["powerpc"] = read_arch_errnos(
-        linux_path, "powerpc", karch_errnos[None], []
-    )
 
     for arch, karch in kernel_arches.items():
         errnos = karch_errnos[karch]
