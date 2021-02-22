@@ -138,46 +138,81 @@ def main(args: List[str]) -> None:
         )
         sys.exit(1)
 
-    numbers = {
-        "aarch64": dict(load_headers(linux_path, names, "arm64")),
-        "armeabi": dict(
-            list(
-                load_table(linux_path, "arch/arm/tools/syscall.tbl", {"common", "eabi"})
-            )
-            + list(load_headers(linux_path, names, "arm", "#define __ARM_EABI__"))
-        ),
-        "mips": dict(
-            load_headers(linux_path, names, "mips", "#define _MIPS_SIM _MIPS_SIM_ABI32")
-        ),
-        "mips64": dict(
-            load_headers(linux_path, names, "mips", "#define _MIPS_SIM _MIPS_SIM_ABI64")
-        ),
-        "powerpc": dict(
-            load_headers(linux_path, names, "powerpc", "#undef __arch64__")
-        ),
-        "powerpc64": dict(
-            load_headers(
-                linux_path,
-                names,
-                "powerpc",
-                "#define __arch64__ 1\n#define __powerpc64__",
-            )
-        ),
-        "sparc64": dict(load_headers(linux_path, names, "sparc")),
-        "riscv64": dict(load_headers(linux_path, names, "riscv", "")),
-        "x86": dict(
-            load_table(linux_path, "arch/x86/entry/syscalls/syscall_32.tbl", {"i386"})
-        ),
-        "x86_64": dict(
-            load_table(
-                linux_path, "arch/x86/entry/syscalls/syscall_64.tbl", {"common", "64"}
-            )
-        ),
+    arch_info = {
+        "aarch64": {
+            "name": "arm64",
+            "headers": {"defines": {}},
+        },
+        "armeabi": {
+            "name": "arm",
+            "table": {"fname": "tools/syscall.tbl", "abis": {"common", "eabi"}},
+            "headers": {"defines": {"__ARM_EABI__": ""}},
+        },
+        "mips": {
+            "name": "mips",
+            "headers": {"defines": {"_MIPS_SIM": "_MIPS_SIM_ABI32"}},
+        },
+        "mips64": {
+            "name": "mips",
+            "headers": {"defines": {"_MIPS_SIM": "_MIPS_SIM_ABI64"}},
+        },
+        "powerpc": {
+            "name": "powerpc",
+            "headers": {"defines": {"__arch64__": None}},
+        },
+        "powerpc64": {
+            "name": "powerpc",
+            "headers": {"defines": {"__arch64__": 1, "__powerpc64__": ""}},
+        },
+        "sparc64": {
+            "name": "sparc",
+            "headers": {"defines": {}},
+        },
+        "riscv64": {
+            "name": "riscv",
+            "headers": {"defines": {}},
+        },
+        "x86": {
+            "name": "x86",
+            "table": {"fname": "entry/syscalls/syscall_32.tbl", "abis": {"i386"}},
+        },
+        "x86_64": {
+            "name": "x86",
+            "table": {
+                "fname": "entry/syscalls/syscall_64.tbl",
+                "abis": {"common", "64"},
+            },
+        },
     }
+
+    numbers = {}
+    for arch, info in arch_info.items():
+        numbers[arch] = {}
+
+        if "table" in info:
+            numbers[arch].update(
+                load_table(
+                    linux_path,
+                    os.path.join("arch", info["name"], info["table"]["fname"]),
+                    info["table"]["abis"],
+                )
+            )
+
+        if "headers" in info:
+            extra = "\n".join(
+                (
+                    "#define {} {}".format(name, value)
+                    if value is not None
+                    else "#undef {}".format(name)
+                )
+                for name, value in info["headers"]["defines"].items()
+            )
+
+            numbers[arch].update(load_headers(linux_path, names, info["name"], extra))
 
     for arch, nums in numbers.items():
         if not nums:
-            continue
+            raise RuntimeError("No system call numbers found for {}!".format(arch))
 
         with open("{}/src/platform/linux-{}/nr.rs".format(repo_path, arch), "w") as f:
             f.write(
