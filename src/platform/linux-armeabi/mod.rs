@@ -133,9 +133,10 @@ pub unsafe fn syscall7(
     let ret: usize;
     asm!(
         "push {{r6}}",
-        "mov r6, r8",
+        "mov r6, {}",
         "swi #0",
         "pop {{r6}}",
+        in(reg) a7,
         in("r7") n,
         inout("r0") a1 => ret,
         in("r1") a2,
@@ -143,7 +144,6 @@ pub unsafe fn syscall7(
         in("r3") a4,
         in("r4") a5,
         in("r5") a6,
-        in("r8") a7,
         out("lr") _,
     );
     ret
