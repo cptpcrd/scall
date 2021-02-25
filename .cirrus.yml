@@ -1,6 +1,8 @@
 task:
   name: FreeBSD $FREEBSD_VERSION ($TOOLCHAIN)
 
+  only_if: $CIRRUS_BRANCH != 'syscalls-auto'
+
   freebsd_instance:
     cpu: 1
     image_family: $FREEBSD_IMAGE
