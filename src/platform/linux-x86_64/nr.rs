@@ -166,6 +166,7 @@ pub const MLOCKALL: usize = 151;
 pub const MMAP: usize = 9;
 pub const MODIFY_LDT: usize = 154;
 pub const MOUNT: usize = 165;
+pub const MOUNT_SETATTR: usize = 442;
 pub const MOVE_MOUNT: usize = 429;
 pub const MOVE_PAGES: usize = 279;
 pub const MPROTECT: usize = 10;

@@ -173,6 +173,7 @@ pub const MMAP: usize = 4090;
 pub const MMAP2: usize = 4210;
 pub const MODIFY_LDT: usize = 4123;
 pub const MOUNT: usize = 4021;
+pub const MOUNT_SETATTR: usize = 4442;
 pub const MOVE_MOUNT: usize = 4429;
 pub const MOVE_PAGES: usize = 4308;
 pub const MPROTECT: usize = 4125;

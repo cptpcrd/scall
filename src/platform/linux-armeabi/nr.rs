@@ -186,6 +186,7 @@ pub const MLOCK2: usize = 390;
 pub const MLOCKALL: usize = 152;
 pub const MMAP2: usize = 192;
 pub const MOUNT: usize = 21;
+pub const MOUNT_SETATTR: usize = 442;
 pub const MOVE_MOUNT: usize = 429;
 pub const MOVE_PAGES: usize = 344;
 pub const MPROTECT: usize = 125;
