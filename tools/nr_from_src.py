@@ -214,6 +214,27 @@ def main(args: List[str]) -> None:
         if not nums:
             raise RuntimeError("No system call numbers found for {}!".format(arch))
 
+        for name in [
+            "setuid",
+            "setreuid",
+            "setresuid",
+            "setfsuid",
+            "setgid",
+            "setregid",
+            "setresgid",
+            "setfsgid",
+            "setgroups",
+            "getuid",
+            "geteuid",
+            "getresuid",
+            "getgid",
+            "getegid",
+            "getresgid",
+            "getgroups",
+        ]:
+            if name + "32" not in nums:
+                nums[name + "32"] = nums[name]
+
         with open("{}/src/platform/linux-{}/nr.rs".format(repo_path, arch), "w") as f:
             f.write(
                 "//! System call numbers for {} Linux.\n\n".format(
