@@ -25,6 +25,18 @@ fn test_ebadf() {
             0
         );
 
+        #[cfg(any(target_os = "macos", target_os = "freebsd"))]
+        assert_eq!(
+            syscall!(
+                SYSCALL,
+                scall::nr::WRITE,
+                -4isize,
+                MESSAGE.as_ptr(),
+                MESSAGE.len()
+            ),
+            Err(eno::EBADF)
+        );
+
         #[cfg(scall_error = "packed")]
         assert_eq!(
             syscall_raw!(WRITE, -4isize, MESSAGE.as_ptr(), MESSAGE.len()),
@@ -83,6 +95,15 @@ fn test_getpid() {
     {
         assert_eq!(unsafe { scall::syscall0(scall::nr::GETPID) }, (pid, false));
         assert_eq!(unsafe { syscall_raw!(GETPID) }, (pid, false));
+    }
+
+    #[cfg(any(target_os = "macos", target_os = "freebsd"))]
+    {
+        assert_eq!(
+            unsafe { syscall!(SYSCALL, scall::nr::GETPID).unwrap() },
+            pid
+        );
+        assert_eq!(unsafe { syscall_nofail!(SYSCALL, scall::nr::GETPID) }, pid);
     }
 }
 
@@ -415,11 +436,25 @@ fn test_procctl() {
         );
 
         assert_eq!(
-            syscall!(PROCCTL, libc::P_PID, pid, PROC_REAP_RELEASE, 0),
+            syscall!(
+                SYSCALL,
+                scall::nr::PROCCTL,
+                libc::P_PID,
+                pid,
+                PROC_REAP_RELEASE,
+                0
+            ),
             Ok(0)
         );
         assert_eq!(
-            syscall!(PROCCTL, libc::P_PID, pid, PROC_REAP_RELEASE, 0),
+            syscall!(
+                SYSCALL,
+                scall::nr::PROCCTL,
+                libc::P_PID,
+                pid,
+                PROC_REAP_RELEASE,
+                0
+            ),
             Err(eno::EINVAL)
         );
     }
