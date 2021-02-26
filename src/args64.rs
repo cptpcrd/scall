@@ -64,6 +64,10 @@
 ///     syscall_args64!(READAHEAD, 0, @u64 { x += 1; x }, 0).unwrap();
 /// }
 /// ```
+///
+/// # Safety
+///
+/// See [`syscall!`] (and also read "[Important notes](#important-notes)" above).
 #[doc(cfg(target_os = "linux"))]
 #[macro_export]
 macro_rules! syscall_args64 {

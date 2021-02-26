@@ -23,6 +23,20 @@
 /// values. In this case, you can call `syscall_raw!`, store the [`RawResult`]s from each, and
 /// *then* decode and check them with [`decode_raw_result()`].
 ///
+/// # Example
+///
+/// ```
+/// # use scall::{syscall_raw, decode_raw_result};
+/// let res = unsafe { syscall_raw(GETPID) };
+/// // ...
+/// let pid = decode_raw_result(res).unwrap();
+/// assert_eq!(pid as u32, std::process::id());
+/// ```
+///
+/// # Safety
+///
+/// See [`syscall!`].
+///
 /// [`syscall!`]: ./macro.syscall.html
 /// [`syscall_nofail!`]: ./macro.syscall_nofail.html
 /// [`RawResult`]: ./type.RawResult.html
@@ -126,6 +140,10 @@ macro_rules! syscall_raw {
 /// }
 /// ```
 ///
+/// # Safety
+///
+/// See [`syscall!`]. Also, make sure that one of the 2 conditions described above is satisfied.
+///
 /// [`syscall!`]: ./macro.syscall.html
 #[macro_export]
 macro_rules! syscall_nofail {
@@ -204,6 +222,19 @@ macro_rules! syscall_nofail {
 /// Tip: If you're not in a `#![no_std]` crate, you can do something like `syscall!(SETRESUID, 0,
 /// 0, 0).map_err(std::io::Error::from_raw_os_error)` to get an `io::Result<usize>`, which is
 /// easier to work with.
+///
+/// # Example
+///
+/// ```
+/// # use scall::syscall;
+/// let pid = unsafe { syscall!(GETPID).unwrap() };
+/// assert_eq!(pid as u32, std::process::id());
+/// ```
+///
+/// # Safety
+///
+/// Making syscalls is *wildly* unsafe! Read the documentation carefully, and consider
+/// architecture-specific differences ([`syscall_args64!`] may help with this).a
 #[macro_export]
 macro_rules! syscall {
     ($nr:ident$(, $args:expr)*) => {
