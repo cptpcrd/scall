@@ -27,7 +27,7 @@
 ///
 /// ```
 /// # use scall::{syscall_raw, decode_raw_result};
-/// let res = unsafe { syscall_raw(GETPID) };
+/// let res = unsafe { syscall_raw!(GETPID) };
 /// // ...
 /// let pid = decode_raw_result(res).unwrap();
 /// assert_eq!(pid as u32, std::process::id());
