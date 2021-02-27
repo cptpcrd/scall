@@ -18,8 +18,8 @@ pub unsafe fn syscall0(n: usize) -> (usize, bool) {
     let is_err: u8;
     asm!(
         "syscall",
-        "adc {0}, {0}",
-        inout(reg_byte) 0u8 => is_err,
+        "setc {}",
+        out(reg_byte) is_err,
         inout("rax") n => ret,
         out("rcx") _,
         out("r11") _,
@@ -33,8 +33,8 @@ pub unsafe fn syscall1(n: usize, a1: usize) -> (usize, bool) {
     let is_err: u8;
     asm!(
         "syscall",
-        "adc {0}, {0}",
-        inout(reg_byte) 0u8 => is_err,
+        "setc {}",
+        out(reg_byte) is_err,
         inout("rax") n => ret,
         in("rdi") a1,
         out("rcx") _,
@@ -49,8 +49,8 @@ pub unsafe fn syscall2(n: usize, a1: usize, a2: usize) -> (usize, bool) {
     let is_err: u8;
     asm!(
         "syscall",
-        "adc {0}, {0}",
-        inout(reg_byte) 0u8 => is_err,
+        "setc {}",
+        out(reg_byte) is_err,
         inout("rax") n => ret,
         in("rdi") a1,
         in("rsi") a2,
@@ -66,8 +66,8 @@ pub unsafe fn syscall3(n: usize, a1: usize, a2: usize, a3: usize) -> (usize, boo
     let is_err: u8;
     asm!(
         "syscall",
-        "adc {0}, {0}",
-        inout(reg_byte) 0u8 => is_err,
+        "setc {}",
+        out(reg_byte) is_err,
         inout("rax") n => ret,
         in("rdi") a1,
         in("rsi") a2,
@@ -84,8 +84,8 @@ pub unsafe fn syscall4(n: usize, a1: usize, a2: usize, a3: usize, a4: usize) -> 
     let is_err: u8;
     asm!(
         "syscall",
-        "adc {0}, {0}",
-        inout(reg_byte) 0u8 => is_err,
+        "setc {}",
+        out(reg_byte) is_err,
         inout("rax") n => ret,
         in("rdi") a1,
         in("rsi") a2,
@@ -110,8 +110,8 @@ pub unsafe fn syscall5(
     let is_err: u8;
     asm!(
         "syscall",
-        "adc {0}, {0}",
-        inout(reg_byte) 0u8 => is_err,
+        "setc {}",
+        out(reg_byte) is_err,
         inout("rax") n => ret,
         in("rdi") a1,
         in("rsi") a2,
@@ -138,8 +138,8 @@ pub unsafe fn syscall6(
     let is_err: u8;
     asm!(
         "syscall",
-        "adc {0}, {0}",
-        inout(reg_byte) 0u8 => is_err,
+        "setc {}",
+        out(reg_byte) is_err,
         inout("rax") n => ret,
         in("rdi") a1,
         in("rsi") a2,
