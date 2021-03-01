@@ -233,8 +233,8 @@ macro_rules! syscall_nofail {
 ///
 /// # Safety
 ///
-/// Making syscalls is *wildly* unsafe! Read the documentation carefully, and consider
-/// architecture-specific differences ([`syscall_args64!`] may help with this).a
+/// Making syscalls is *wildly* unsafe! Read the man pages carefully, and consider
+/// architecture-specific differences ([`syscall_args64!`] may help with this).
 #[macro_export]
 macro_rules! syscall {
     ($nr:ident$(, $args:expr)*) => {
