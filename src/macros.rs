@@ -237,11 +237,7 @@ macro_rules! syscall_nofail {
 /// architecture-specific differences ([`syscall_args64!`] may help with this).
 #[macro_export]
 macro_rules! syscall {
-    ($nr:ident$(, $args:expr)*) => {
+    ($nr:ident$(, $args:expr)* $(,)?) => {
         $crate::decode_raw_result($crate::syscall_raw!($nr$(, $args)*))
-    };
-
-    ($nr:ident, $($args:expr,)*) => {
-        $crate::syscall!($nr$(, $args)*)
     };
 }
