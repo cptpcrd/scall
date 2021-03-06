@@ -16,10 +16,7 @@ fn uses_error_flag() -> bool {
     match target_os.as_str() {
         "freebsd" | "macos" => true,
 
-        "linux" => matches!(
-            target_arch.as_str(),
-            "mips" | "mips64" | "powerpc" | "powerpc64"
-        ),
+        "linux" => matches!(target_arch.as_str(), "mips" | "mips64"),
 
         _ => panic!("Unsupported OS"),
     }
