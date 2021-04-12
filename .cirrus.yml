@@ -24,6 +24,7 @@ task:
 
   env:
     CODECOV_TOKEN: ENCRYPTED[044ba2988745ce07c74c2ff4c96c80fcee00f0919de457f25b3d8c8c1d986bae996b47cf0392b256287be5c6e0dd6e4b]
+    RUSTFLAGS: -D warnings
 
   install_script:
     - pkg install -y curl kcov bash
