@@ -23,7 +23,7 @@ task:
         TOOLCHAIN: nightly
 
   env:
-    CODECOV_TOKEN: ENCRYPTED[044ba2988745ce07c74c2ff4c96c80fcee00f0919de457f25b3d8c8c1d986bae996b47cf0392b256287be5c6e0dd6e4b]
+    CODECOV_TOKEN: ENCRYPTED[d3100e5cabab45c347925fdd8375e38a8b22f1c7d9852ebfefa50689d5a0faea7c15b3dfc28acd205e6129d1207ba0c2]
     RUSTFLAGS: -D warnings
 
   install_script:
