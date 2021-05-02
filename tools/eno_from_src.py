@@ -44,7 +44,7 @@ def read_errno_header_file(
         undef_name = match.group("undef_name")
         if undef_name:
             assert undef_name.startswith("E")
-            errnos.pop(undef_name)
+            errnos.pop(undef_name, None)
             continue
 
         name = match.group("name")
