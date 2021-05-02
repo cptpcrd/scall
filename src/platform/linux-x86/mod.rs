@@ -60,29 +60,42 @@ pub unsafe fn syscall3(n: usize, a1: usize, a2: usize, a3: usize) -> usize {
 
 #[inline(always)]
 pub unsafe fn syscall4(n: usize, a1: usize, a2: usize, a3: usize, a4: usize) -> usize {
+    // esi is LLVM-reserved, so we have to save and restore it
     let ret: usize;
     asm!(
+        "push esi",
+        "mov esi, edi",
         "int $$0x80",
+        "pop esi",
         inout("eax") n => ret,
         in("ebx") a1,
         in("ecx") a2,
         in("edx") a3,
-        in("esi") a4,
+        in("edi") a4,
     );
     ret
 }
 
+// XXX: Because ebp and esi need to be restored, syscall5() and syscall6() have to place the last
+// few arguments in an array and then mov them to the proper locations (restoring the values from
+// the stack afterward)
+
 #[inline(always)]
 pub unsafe fn syscall5(n: usize, a1: usize, a2: usize, a3: usize, a4: usize, a5: usize) -> usize {
     let ret: usize;
+    let final_args = [a4, a5];
+
     asm!(
+        "push esi",
+        "mov esi, [edi + 0]",
+        "mov edi, [edi + 4]",
         "int $$0x80",
+        "pop esi",
         inout("eax") n => ret,
         in("ebx") a1,
         in("ecx") a2,
         in("edx") a3,
-        in("esi") a4,
-        in("edi") a5,
+        inout("edi") final_args.as_ptr() => _,
     );
     ret
 }
@@ -98,52 +111,21 @@ pub unsafe fn syscall6(
     a6: usize,
 ) -> usize {
     let ret: usize;
-
-    // XXX: this fails when building without optimizations:
-    //
-    //    llvm_asm!("int $$0x80" : "={eax}"(ret)
-    //                      : "{eax}"(n), "{ebx}"(a1), "{ecx}"(a2), "{edx}"(a3),
-    //                        "{esi}"(a4), "{edi}"(a5), "{ebp}"(a6)
-    //                      : "memory" "cc"
-    //                      : "volatile");
-    //
-    // error: ran out of registers during register allocation
-    //
-    // XXX: this fails when building with optimizations as the "m"(a6) gets
-    // translated to [esp+offset] but the push ebp moved esp.
-    //
-    //      llvm_asm!("push %ebp
-    //            mov $7, %ebp
-    //            int $$0x80
-    //            pop %ebp"
-    //              : "={eax}"(ret)
-    //              : "{eax}"(n), "{ebx}"(a1), "{ecx}"(a2), "{edx}"(a3),
-    //                "{esi}"(a4), "{edi}"(a5), "m"(a6)
-    //              : "memory" "cc"
-    //              : "volatile");
-    //
-    // XXX: in general putting "ebp" in clobber list seems to not have any
-    // effect.
-    //
-    // As workaround only use a single input operand with known memory layout
-    // and manually save restore ebp.
-    //
-    // UPDATED: Only store the last 2 arguments in the array input; everything else is passed in
-    // registers for efficiency (and to let the compiler optimize if it can).
-
-    let final_args = [a5, a6];
+    let final_args = [a4, a5, a6];
 
     asm!(
         "push ebp",
-        "mov ebp, [edi + 4]",
-        "mov edi, [edi + 0]",
+        "push esi",
+        "mov ebp, [edi + 8]",
+        "mov esi, [edi + 0]",
+        "mov edi, [edi + 4]",
         "int $$0x80",
+        "pop esi",
         "pop ebp",
         inout("eax") n => ret,
         in("ebx") a1,
         in("ecx") a2,
         in("edx") a3,
-        in("esi") a4,
         inout("edi") final_args.as_ptr() => _,
     );
     ret
