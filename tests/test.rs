@@ -333,8 +333,8 @@ fn test_epoll() {
         // Now write() some data in, and it should poll as ready
         assert_eq!(syscall!(WRITE, pipefds[1], &b'0' as *const _, 1), Ok(1));
         assert_eq!(epoll_wait(epfd, &mut events, 0), Ok(1));
-        assert_eq!({events[0].u64}, pipefds[0] as u64);
-        assert_eq!({events[0].events}, libc::EPOLLIN as u32);
+        assert_eq!({ events[0].u64 }, pipefds[0] as u64);
+        assert_eq!({ events[0].events }, libc::EPOLLIN as u32);
 
         // Close both ends of the pipe
         syscall_nofail!(CLOSE, pipefds[0]);
@@ -401,8 +401,8 @@ fn test_kqueue() {
         // Now write() some data in, and it should poll as ready
         assert_eq!(syscall!(WRITE, pipefds[1], &b'0' as *const _, 1), Ok(1));
         assert_eq!(kevent(kq, &[], &mut events, Some(timeout_0)), Ok(1));
-        assert_eq!({events[0].ident}, pipefds[0] as _);
-        assert_eq!({events[0].filter}, libc::EVFILT_READ as _);
+        assert_eq!({ events[0].ident }, pipefds[0] as _);
+        assert_eq!({ events[0].filter }, libc::EVFILT_READ as _);
 
         // Close both ends of the pipe
         syscall_nofail!(CLOSE, pipefds[0]);
