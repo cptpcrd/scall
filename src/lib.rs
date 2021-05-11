@@ -101,6 +101,10 @@ mod args64;
     all(target_os = "macos", target_arch = "x86_64"),
     path = "platform/macos-x86_64/mod.rs"
 )]
+#[cfg_attr(
+    all(target_os = "macos", target_arch = "aarch64"),
+    path = "platform/macos-aarch64/mod.rs"
+)]
 pub mod platform;
 
 /// The type returned by [`syscall_raw!`] on this platform.

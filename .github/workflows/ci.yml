@@ -28,6 +28,9 @@ jobs:
           - toolchain: nightly
             target: x86_64-apple-darwin
             os: macos-latest
+          - toolchain: nightly
+            target: aarch64-apple-darwin
+            os: macos-latest
 
     # Allow nightly builds to fail
     continue-on-error: ${{ matrix.toolchain == 'nightly' }}
@@ -66,6 +69,7 @@ jobs:
           toolchain: ${{ matrix.toolchain }}
           command: test
           args: --verbose --target ${{ matrix.target }}
+        if: matrix.target != 'aarch64-apple-darwin'
 
       - name: Test (release mode)
         uses: actions-rs/cargo@v1
@@ -73,6 +77,7 @@ jobs:
           toolchain: ${{ matrix.toolchain }}
           command: test
           args: --verbose --target ${{ matrix.target }} --release
+        if: matrix.target != 'aarch64-apple-darwin'
 
   cross-build:
     name: Build
