@@ -40,7 +40,7 @@ task:
       mkdir -p coverage-build
       for f in target/debug/deps/*; do
         if [ -x "$f" ]; then
-          kcov --exclude-pattern=/.cargo,/.rustup,/usr/lib --include-path=$(pwd) --verify coverage-build/ "$f"
+          kcov --exclude-pattern=/.cargo,/.rustup,/usr/lib --debug=15 --verify coverage-build/ "$f"
         fi
       done
   coverage_collect_upload_script:
