@@ -68,7 +68,7 @@
 /// # Safety
 ///
 /// See [`syscall!`] (and also read "[Important notes](#important-notes)" above).
-#[doc(cfg(target_os = "linux"))]
+#[doc(cfg(any(target_os = "linux", target_os = "android")))]
 #[macro_export]
 macro_rules! syscall_args64 {
     ($nr:ident$(, $arg1:expr)* $(, @u64 $arg2:expr)+ $(, $arg3:expr)* $(,)?) => {
