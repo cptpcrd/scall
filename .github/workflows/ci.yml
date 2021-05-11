@@ -92,6 +92,11 @@ jobs:
           # - powerpc64-unknown-linux-gnu
           - powerpc64le-unknown-linux-gnu
           - riscv64gc-unknown-linux-gnu
+          - aarch64-linux-android
+          - arm-linux-androideabi
+          - armv7-linux-androideabi
+          - x86_64-linux-android
+          - i686-linux-android
 
     runs-on: ubuntu-latest
 

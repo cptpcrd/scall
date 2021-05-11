@@ -34,7 +34,7 @@ pub use platform::*;
 
 mod macros;
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 mod args64;
 
 #[cfg_attr(
@@ -76,6 +76,22 @@ mod args64;
 #[cfg_attr(
     all(target_os = "linux", target_arch = "x86_64"),
     path = "platform/linux-x86_64/mod.rs"
+)]
+#[cfg_attr(
+    all(target_os = "android", target_arch = "aarch64"),
+    path = "platform/android-aarch64/mod.rs"
+)]
+#[cfg_attr(
+    all(target_os = "android", target_arch = "arm"),
+    path = "platform/android-armeabi/mod.rs"
+)]
+#[cfg_attr(
+    all(target_os = "android", target_arch = "x86"),
+    path = "platform/android-x86/mod.rs"
+)]
+#[cfg_attr(
+    all(target_os = "android", target_arch = "x86_64"),
+    path = "platform/android-x86_64/mod.rs"
 )]
 #[cfg_attr(
     all(target_os = "freebsd", target_arch = "x86_64"),

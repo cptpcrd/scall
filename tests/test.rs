@@ -120,7 +120,7 @@ fn test_faccessat() {
             0
         );
 
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "android"))]
         {
             let res = syscall!(FACCESSAT2, libc::AT_FDCWD, b"/\0".as_ptr(), libc::F_OK, 0);
 
@@ -129,7 +129,7 @@ fn test_faccessat() {
     }
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 #[test]
 fn test_pread64() {
     use std::io::prelude::*;
@@ -161,7 +161,7 @@ fn test_pread64() {
     }
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 #[test]
 fn test_readahead() {
     use std::os::unix::prelude::*;
@@ -284,7 +284,7 @@ fn test_prctl() {
     }
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 #[test]
 fn test_epoll() {
     unsafe fn epoll_wait(
