@@ -92,15 +92,9 @@ def main(args: List[str]) -> None:
             if "COMPAT" in sc_types:
                 continue
 
-            for sc_type, prefix in [
-                ("COMPAT4", "FREEBSD4_"),
-                ("COMPAT6", "FREEBSD6_"),
-                ("COMPAT7", "FREEBSD7_"),
-                ("COMPAT10", "FREEBSD10_"),
-                ("COMPAT11", "FREEBSD11_"),
-            ]:
-                if sc_type in sc_types:
-                    name = prefix + name
+            for sc_type in sc_types:
+                if sc_type.startswith("COMPAT"):
+                    name = "FREEBSD{}_{}".format(int(sc_type[6:]), name)
                     break
 
         elif os_name == "macos":
