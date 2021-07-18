@@ -164,6 +164,7 @@ pub const MADVISE: usize = 28;
 pub const MBIND: usize = 237;
 pub const MEMBARRIER: usize = 324;
 pub const MEMFD_CREATE: usize = 319;
+pub const MEMFD_SECRET: usize = 447;
 pub const MIGRATE_PAGES: usize = 256;
 pub const MINCORE: usize = 27;
 pub const MKDIR: usize = 83;
